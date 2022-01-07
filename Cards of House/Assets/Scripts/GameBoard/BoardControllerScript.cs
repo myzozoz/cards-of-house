@@ -1,11 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 
 
-public class BoardControllerScript : MonoBehaviour
+public class BoardControllerScript : MonoBehaviour, IBoard
 {
     public int width;
     public int depth;
@@ -15,44 +14,48 @@ public class BoardControllerScript : MonoBehaviour
 
     private Grid grid;
     private Tilemap tilemap;
+    private Dictionary<System.Guid,IUnit> units;
+    private Queue<System.Guid> actionQueue;
     // Start is called before the first frame update
     void Start()
     {
         grid = transform.GetComponent<Grid>();
         tilemap = transform.GetComponentInChildren<Tilemap>();
-        if (tilemap != null)
+        units = new Dictionary<System.Guid, IUnit>();
+        actionQueue = new Queue<System.Guid>();
+        if (tilemap == null)
         {
-            Debug.Log("Tilemap found");
-            Debug.Log("bounds: " + tilemap.cellBounds);
-            Debug.Log("Contains forbidden tile: " + tilemap.ContainsTile(forbiddenTile));
-            Debug.Log("bounds: " + tilemap.cellBounds);
-            OverrideBoxFill2D(new Vector3Int(0, 0, 0), defaultTile, 0, 0, width-1, depth-1);
-            AddRandomForbiddenTiles(forbiddenTiles);
+            Debug.Log("No Tilemap found, please check that one such exists");
         }
-        
+        List<IUnit> unitList = new List<IUnit>(transform.GetComponentsInChildren<IUnit>());
+        foreach (IUnit unit in unitList)
+        {
+            if (unit != null)
+            {
+                units.Add(unit.GetId(), unit);
+                actionQueue.Enqueue(unit.GetId());
+            }
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetButton("Cancel"))
-        {
-            Debug.Log("Escape pressed");
-            Stop();
-        }
-        if (Input.GetKeyDown(KeyCode.RightArrow)) {
-            Debug.Log("Next");
-        }
+        
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            AddRandomForbiddenTiles(forbiddenTiles);
+            //AddRandomForbiddenTiles(forbiddenTiles);
         }
 
     }
 
-    public void Stop()
+    public void Step()
     {
-        SceneManager.LoadScene("MainMenu");
+        IUnit current = units[actionQueue.Dequeue()];
+        Debug.Log("Now in turn: " + current);
+        //Do actions
+        actionQueue.Enqueue(current.GetId());
+        Debug.Log("Next up: " + actionQueue.Peek());
     }
 
     private void OverrideBoxFill2D(Vector3Int start, TileBase tile, int startX, int startY, int endX, int endY)
@@ -87,5 +90,26 @@ public class BoardControllerScript : MonoBehaviour
             Debug.Log("Setting tile at " + pos);
             tilemap.SetTile(pos, forbiddenTile);
         }
+    }
+
+    private void InitializeMap()
+    {
+        OverrideBoxFill2D(new Vector3Int(0, 0, 0), defaultTile, 0, 0, width - 1, depth - 1);
+        AddRandomForbiddenTiles(forbiddenTiles);
+    }
+
+    public List<IUnit> GetUnitsOnBoard()
+    {
+        return new List<IUnit>(units.Values);
+    }
+
+    public Vector3Int GetUnitLocation(System.Guid unitId)
+    {
+        return units[unitId].GetLocation();
+    }
+
+    public Grid GetGrid()
+    {
+        return grid;
     }
 }
