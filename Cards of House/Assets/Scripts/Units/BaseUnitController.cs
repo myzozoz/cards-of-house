@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class BaseUnitController : MonoBehaviour, IUnit
 {
@@ -10,6 +11,8 @@ public class BaseUnitController : MonoBehaviour, IUnit
     public IPlayer enemyPlayer;
     public int primaryReach;
     public int secondaryReach;
+    public float heightOffset;
+    public TileBase pathTile;
 
     private IBoard board;
     private Grid grid;
@@ -35,15 +38,32 @@ public class BaseUnitController : MonoBehaviour, IUnit
 
     public void Execute()
     {
+        if (!canAct)
+        {
+            return;
+        }
+        Tilemap tm = board.GetTilemap();
+
         //Choose target (enemy unit, enemy "player", powerup...)
         ITarget target = ChooseTarget(board.GetUnitsOnBoard());
         //Choose action strategy (walk, attack...)
         //Execute
-        Debug.Log("Target found: " + target.GetLocation());
+        List<Vector3Int> possibleLocations = Navigator.FindLocationsWithinAttackDistance(tm, target, primaryReach, secondaryReach);
+        Vector3Int closest = Navigator.FindNearestLocation(this.GetLocation(), possibleLocations);
         //If target is in range, attack
-        Navigator.FindLocationsWithinAttackDistance(board.GetTilemap(), target, primaryReach, secondaryReach);
-        //otherwise walk
-
+        if (closest == this.GetLocation())
+        {
+            Debug.Log("In range!");
+        } else //otherwise walk
+        {
+            List<Vector3Int> steps = Navigator.FindNextStep(tm, this.GetLocation(), closest, false);
+            board.ResetPathTiles();
+            foreach (Vector3Int s in steps)
+            {
+                tm.SetTile(s, pathTile);
+            }
+            MoveTo(steps[steps.Count - 1]);
+        }
     }
 
     public TargetType GetTargetType()
@@ -96,15 +116,17 @@ public class BaseUnitController : MonoBehaviour, IUnit
             grid = board.GetGrid();
         }
 
-        Debug.Log("Transform name: " + transform.name);
-        Debug.Log("position: " + transform.position);
-        Debug.Log("to grid coordinates: " + grid.WorldToCell(transform.position));
-
         return grid.WorldToCell(transform.position);
     }
 
     public System.Guid GetId()
     {
         return id;
+    }
+
+    private void MoveTo(Vector3Int target)
+    {
+        Vector3 targetPos = board.GetTilemap().GetCellCenterWorld(target) + new Vector3(0,heightOffset,0);
+        transform.Translate(targetPos - transform.position);
     }
 }

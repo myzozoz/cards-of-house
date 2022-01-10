@@ -10,4 +10,5 @@ public interface IBoard
     public Vector3Int GetUnitLocation(System.Guid unitId);
     public Grid GetGrid();
     public Tilemap GetTilemap();
+    public void ResetPathTiles();
 }

@@ -119,4 +119,20 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     {
         return tilemap;
     }
+
+    public void ResetPathTiles()
+    {
+        Debug.Log(tilemap.cellBounds.xMin + ", " + tilemap.cellBounds.xMax + ", " + tilemap.cellBounds.yMin + ", " + tilemap.cellBounds.yMax);
+        for (int x = tilemap.cellBounds.xMin; x < tilemap.cellBounds.xMax; x++)
+        {
+            for (int y = tilemap.cellBounds.yMin; y < tilemap.cellBounds.yMax; y++)
+            {
+                Vector3Int temp = new Vector3Int(x, y, 0);
+                if (tilemap.HasTile(temp) && tilemap.GetTile(temp).name == "Path")
+                {
+                    tilemap.SetTile(temp, defaultTile);
+                }
+            }
+        }
+    }
 }
