@@ -54,6 +54,8 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         IUnit current = units[actionQueue.Dequeue()];
         Debug.Log("Now in turn: " + current);
         //Do actions
+        current.Execute();
+        //Back to the queue
         actionQueue.Enqueue(current.GetId());
         Debug.Log("Next up: " + actionQueue.Peek());
     }
@@ -111,5 +113,10 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     public Grid GetGrid()
     {
         return grid;
+    }
+
+    public Tilemap GetTilemap()
+    {
+        return tilemap;
     }
 }

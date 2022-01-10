@@ -8,7 +8,8 @@ public class BaseUnitController : MonoBehaviour, IUnit
     public int team;
     public bool canAct = true;
     public IPlayer enemyPlayer;
-    public int range;
+    public int primaryReach;
+    public int secondaryReach;
 
     private IBoard board;
     private Grid grid;
@@ -40,7 +41,7 @@ public class BaseUnitController : MonoBehaviour, IUnit
         //Execute
         Debug.Log("Target found: " + target.GetLocation());
         //If target is in range, attack
-        
+        Navigator.FindLocationsWithinAttackDistance(board.GetTilemap(), target, primaryReach, secondaryReach);
         //otherwise walk
 
     }
@@ -80,7 +81,7 @@ public class BaseUnitController : MonoBehaviour, IUnit
         {
             return enemyPlayer;
         }
-        return units[0];
+        return filteredList[0];
     }
 
     public int GetTeam()
@@ -90,6 +91,15 @@ public class BaseUnitController : MonoBehaviour, IUnit
 
     public Vector3Int GetLocation()
     {
+        if (grid == null)
+        {
+            grid = board.GetGrid();
+        }
+
+        Debug.Log("Transform name: " + transform.name);
+        Debug.Log("position: " + transform.position);
+        Debug.Log("to grid coordinates: " + grid.WorldToCell(transform.position));
+
         return grid.WorldToCell(transform.position);
     }
 
