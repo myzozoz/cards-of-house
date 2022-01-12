@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface ITarget
+public interface ITarget : ITeam
 {
     public TargetType GetTargetType();
-    public int GetTeam();
     public Vector3Int GetLocation();
+    public void TakeDamage(float val);
+    public System.Guid GetId();
+    public bool IsAlive();
 }

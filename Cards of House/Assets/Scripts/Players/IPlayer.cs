@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IPlayer : ITarget
+public interface IPlayer : ITeam
 {
     public string GetName();
 }

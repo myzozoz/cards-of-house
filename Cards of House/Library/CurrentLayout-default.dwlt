@@ -43,8 +43,8 @@ MonoBehaviour:
     y: 0
     width: 1536
     height: 516
-  m_MinSize: {x: 100, y: 100}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 102, y: 121}
+  m_MaxSize: {x: 4002, y: 4021}
   m_ActualView: {fileID: 21}
   m_Panes:
   - {fileID: 21}
@@ -71,8 +71,8 @@ MonoBehaviour:
     y: 791
     width: 2041
     height: 516
-  m_MinSize: {x: 331, y: 271}
-  m_MaxSize: {x: 14001, y: 10021}
+  m_MinSize: {x: 333, y: 271}
+  m_MaxSize: {x: 14003, y: 10021}
   vertical: 0
   controlID: 62
 --- !u!114 &4
@@ -122,10 +122,10 @@ MonoBehaviour:
     y: 30
     width: 2560
     height: 1307
-  m_MinSize: {x: 881, y: 492}
-  m_MaxSize: {x: 18002, y: 14042}
+  m_MinSize: {x: 879, y: 492}
+  m_MaxSize: {x: 18003, y: 14042}
   vertical: 0
-  controlID: 118
+  controlID: 98
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -145,8 +145,8 @@ MonoBehaviour:
     y: 0
     width: 519
     height: 1307
-  m_MinSize: {x: 276, y: 71}
-  m_MaxSize: {x: 4001, y: 4021}
+  m_MinSize: {x: 275, y: 50}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 17}
   m_Panes:
   - {fileID: 17}
@@ -299,8 +299,8 @@ MonoBehaviour:
     y: 0
     width: 2041
     height: 1307
-  m_MinSize: {x: 605, y: 492}
-  m_MaxSize: {x: 14001, y: 14042}
+  m_MinSize: {x: 604, y: 492}
+  m_MaxSize: {x: 14003, y: 14042}
   vertical: 1
   controlID: 173
 --- !u!114 &13
@@ -325,8 +325,8 @@ MonoBehaviour:
     y: 0
     width: 2041
     height: 791
-  m_MinSize: {x: 605, y: 221}
-  m_MaxSize: {x: 12005, y: 4021}
+  m_MinSize: {x: 604, y: 221}
+  m_MaxSize: {x: 12004, y: 4021}
   vertical: 0
   controlID: 174
 --- !u!114 &14
@@ -419,22 +419,22 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Tilemaps
+    - Assets/Scripts/Units
     m_Globs: []
     m_OriginalText: 
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Tilemaps
+  - Assets/Scripts/Units
   m_LastFoldersGridSize: -1
   m_LastProjectPath: C:\Users\marku\Unity\cards-of-house\Cards of House
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 56440000
-    m_LastClickedID: 17494
-    m_ExpandedIDs: 000000004a4400005444000000ca9a3b
+    m_SelectedIDs: 7c440000
+    m_LastClickedID: 17532
+    m_ExpandedIDs: 00000000664400006844000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -462,7 +462,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 000000004a440000
+    m_ExpandedIDs: 000000006644000068440000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -583,9 +583,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: c4430000
-      m_LastClickedID: 17348
-      m_ExpandedIDs: 66fbffffee430000
+      m_SelectedIDs: d20d0000
+      m_LastClickedID: 0
+      m_ExpandedIDs: 66fbffff04440000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -645,9 +645,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 3.7067823, y: -3.101211, z: 5.540202}
+    m_Target: {x: 3.8630114, y: 0.8888839, z: 2.5032227}
     speed: 2
-    m_Value: {x: 3.7067823, y: -3.101211, z: 5.540202}
+    m_Value: {x: 3.8630114, y: 0.8888839, z: 2.5032227}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -694,13 +694,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.44546068, y: 0.04482073, z: -0.02233632, w: -0.8939069}
+    m_Target: {x: -0.37238616, y: 0.13350445, z: -0.054226708, w: -0.91683215}
     speed: 2
-    m_Value: {x: -0.4454579, y: 0.04482045, z: -0.022336181, w: -0.89390135}
+    m_Value: {x: -0.3723831, y: 0.13350335, z: -0.05422626, w: -0.9168246}
   m_Size:
-    m_Target: 6.5721045
+    m_Target: 4.023065
     speed: 2
-    m_Value: 6.5721045
+    m_Value: 4.023065
   m_Ortho:
     m_Target: 0
     speed: 2

@@ -5,5 +5,5 @@ using UnityEngine;
 public interface IUnit: ITarget
 {
     public void Execute();
-    public System.Guid GetId();
+    public bool CanAct();
 }

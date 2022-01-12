@@ -14,50 +14,59 @@ public class BoardControllerScript : MonoBehaviour, IBoard
 
     private Grid grid;
     private Tilemap tilemap;
-    private Dictionary<System.Guid,IUnit> units;
+    private Dictionary<System.Guid, IUnit> units;
+    private Dictionary<System.Guid, ITarget> targets;
     private Queue<System.Guid> actionQueue;
+    private HashSet<System.Guid> deregisterBuffer;
     // Start is called before the first frame update
     void Start()
     {
         grid = transform.GetComponent<Grid>();
         tilemap = transform.GetComponentInChildren<Tilemap>();
         units = new Dictionary<System.Guid, IUnit>();
+        targets = new Dictionary<System.Guid, ITarget>();
         actionQueue = new Queue<System.Guid>();
+        deregisterBuffer = new HashSet<System.Guid>();
         if (tilemap == null)
         {
             Debug.Log("No Tilemap found, please check that one such exists");
         }
-        List<IUnit> unitList = new List<IUnit>(transform.GetComponentsInChildren<IUnit>());
-        foreach (IUnit unit in unitList)
+        UpdateUnits();
+        UpdateTargets();
+        foreach (IUnit unit in units.Values)
         {
-            if (unit != null)
-            {
-                units.Add(unit.GetId(), unit);
-                actionQueue.Enqueue(unit.GetId());
-            }
+            actionQueue.Enqueue(unit.GetId());
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             //AddRandomForbiddenTiles(forbiddenTiles);
+            Debug.Log($"Units in queue {actionQueue.Count}");
+            Debug.Log($"Ids in deregister buffer {deregisterBuffer.Count}");
         }
 
     }
 
     public void Step()
     {
-        IUnit current = units[actionQueue.Dequeue()];
-        Debug.Log("Now in turn: " + current);
-        //Do actions
-        current.Execute();
-        //Back to the queue
-        actionQueue.Enqueue(current.GetId());
-        Debug.Log("Next up: " + actionQueue.Peek());
+        System.Guid currentId = actionQueue.Dequeue();
+        if (!deregisterBuffer.Contains(currentId)) {
+            IUnit current = units[currentId];
+            //Debug.Log("Now in turn: " + current);
+            //Do actions
+            current.Execute();
+            //Back to the queue
+            actionQueue.Enqueue(currentId);
+        } else {
+            UpdateTargets();
+            UpdateUnits();
+            deregisterBuffer.Remove(currentId);
+        }
+        
     }
 
     private void OverrideBoxFill2D(Vector3Int start, TileBase tile, int startX, int startY, int endX, int endY)
@@ -100,9 +109,41 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         AddRandomForbiddenTiles(forbiddenTiles);
     }
 
+    private void UpdateUnits()
+    {
+        units.Clear();
+        List<IUnit> unitList = new List<IUnit>(transform.GetComponentsInChildren<IUnit>());
+        foreach (IUnit unit in unitList)
+        {
+            if (unit != null && unit.IsAlive() && unit.CanAct())
+            {
+                units.Add(unit.GetId(), unit);
+            }
+        }
+    }
+
+    private void UpdateTargets()
+    {
+        targets.Clear();
+        List<ITarget> targetList = new List<ITarget>(transform.GetComponentsInChildren<ITarget>());
+        foreach (ITarget target in targetList)
+        {
+            if (target != null && target.IsAlive())
+            {
+                targets.Add(target.GetId(), target);
+            }
+        }
+        Debug.Log($"A total of {targetList.Count} targets found");
+    }
+
     public List<IUnit> GetUnitsOnBoard()
     {
         return new List<IUnit>(units.Values);
+    }
+
+    public List<ITarget> GetTargetsOnBoard()
+    {
+        return new List<ITarget>(targets.Values);
     }
 
     public Vector3Int GetUnitLocation(System.Guid unitId)
@@ -122,7 +163,6 @@ public class BoardControllerScript : MonoBehaviour, IBoard
 
     public void ResetPathTiles()
     {
-        Debug.Log(tilemap.cellBounds.xMin + ", " + tilemap.cellBounds.xMax + ", " + tilemap.cellBounds.yMin + ", " + tilemap.cellBounds.yMax);
         for (int x = tilemap.cellBounds.xMin; x < tilemap.cellBounds.xMax; x++)
         {
             for (int y = tilemap.cellBounds.yMin; y < tilemap.cellBounds.yMax; y++)
@@ -134,5 +174,12 @@ public class BoardControllerScript : MonoBehaviour, IBoard
                 }
             }
         }
+    }
+
+    public void Deregister(System.Guid unitId)
+    {
+        deregisterBuffer.Add(unitId);
+        UpdateUnits();
+        UpdateTargets();
     }
 }

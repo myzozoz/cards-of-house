@@ -10,7 +10,7 @@ public static class Navigator
         List<Vector3Int> locationList = new List<Vector3Int>();
         Vector3Int tLoc = target.GetLocation();
         Vector3Int tempLoc;
-        Debug.Log("Finding locations within attack distance of " + tLoc + " (" + pReach + "," + sReach + "):");
+        //Debug.Log("Finding locations within attack distance of " + tLoc + " (" + pReach + "," + sReach + "):");
         // Primary wind directions (horizontal/vertical)
         for (int i = 1; i <= pReach; i++)
         {
@@ -59,7 +59,7 @@ public static class Navigator
                 locationList.Add(tempLoc);
             }
         }
-        Debug.Log("Found " + locationList.Count + " possible attack locations");
+        //Debug.Log("Found " + locationList.Count + " possible attack locations");
         return locationList;
     }
 
@@ -80,14 +80,35 @@ public static class Navigator
         return minLoc;
     }
 
+    public static Vector3Int FindNearestByWalkingDistance(Tilemap tm, Vector3Int s, List<Vector3Int> locs, bool diagonalAllowed)
+    {
+        int minSteps = 10000;
+        Vector3Int minLoc = new Vector3Int(0, 0, 0);
+        foreach (Vector3Int l in locs)
+        {
+            int steps = FindPath(tm, s, l, diagonalAllowed).Count;
+            if (steps < minSteps)
+            {
+                minSteps = steps;
+                minLoc = l;
+            }
+        }
+        return minLoc;
+    }
+
     public static float Distance(Vector3Int a, Vector3Int b)
     {
         return Mathf.Sqrt(Mathf.Pow(b.x - a.x, 2) + Mathf.Pow(b.y - a.y, 2));
     }
 
     //Using A*
-    public static List<Vector3Int> FindNextStep(Tilemap tilemap, Vector3Int start, Vector3Int goal, bool diagonalAllowed)
+    public static List<Vector3Int> FindPath(Tilemap tilemap, Vector3Int start, Vector3Int goal, bool diagonalAllowed)
     {
+        if (start == goal)
+        {
+            return new List<Vector3Int>();
+        }
+
         PQueue<Vector3Int> queue = new PQueue<Vector3Int>();
         queue.Enqueue(start, Distance(start, goal));
 
