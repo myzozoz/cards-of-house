@@ -5,8 +5,11 @@ using UnityEngine.Tilemaps;
 
 public static class Navigator
 {
-    public static List<Vector3Int> FindLocationsWithinAttackDistance(Tilemap tilemap, ITarget target, int pReach, int sReach)
+    public static Vector3Int ControlVector { get; } = new Vector3Int(-666, -666, -666);
+
+    public static List<Vector3Int> FindLocationsWithinAttackDistance(IBoard board, Vector3Int start, ITarget target, int pReach, int sReach, bool diagonalAllowed)
     {
+        Debug.Log($"Moving into finding locations within attack distance for target {target}{target.GetLocation()}");
         List<Vector3Int> locationList = new List<Vector3Int>();
         Vector3Int tLoc = target.GetLocation();
         Vector3Int tempLoc;
@@ -15,22 +18,22 @@ public static class Navigator
         for (int i = 1; i <= pReach; i++)
         {
             tempLoc = tLoc + new Vector3Int(i, 0, 0);
-            if (tilemap.HasTile(tempLoc) && tilemap.GetTile(tempLoc).name != "Forbidden")
+            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(-i, 0, 0);
-            if (tilemap.HasTile(tempLoc) && tilemap.GetTile(tempLoc).name != "Forbidden")
+            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(0, i, 0);
-            if (tilemap.HasTile(tempLoc) && tilemap.GetTile(tempLoc).name != "Forbidden")
+            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(0, -i, 0);
-            if (tilemap.HasTile(tempLoc) && tilemap.GetTile(tempLoc).name != "Forbidden")
+            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
@@ -39,27 +42,28 @@ public static class Navigator
         for (int i = 1; i <= sReach; i++)
         {
             tempLoc = tLoc + new Vector3Int(i, i, 0);
-            if (tilemap.HasTile(tempLoc) && tilemap.GetTile(tempLoc).name != "Forbidden")
+            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(-i, i, 0);
-            if (tilemap.HasTile(tempLoc) && tilemap.GetTile(tempLoc).name != "Forbidden")
+            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(i, -i, 0);
-            if (tilemap.HasTile(tempLoc) && tilemap.GetTile(tempLoc).name != "Forbidden")
+            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(-i, -i, 0);
-            if (tilemap.HasTile(tempLoc) && tilemap.GetTile(tempLoc).name != "Forbidden")
+            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
         }
-        //Debug.Log("Found " + locationList.Count + " possible attack locations");
+        Debug.Log($"Found {locationList.Count} possible attack locations");
+        foreach ( Vector3Int v in locationList ) { Debug.Log(v); }
         return locationList;
     }
 
@@ -80,13 +84,18 @@ public static class Navigator
         return minLoc;
     }
 
-    public static Vector3Int FindNearestByWalkingDistance(Tilemap tm, Vector3Int s, List<Vector3Int> locs, bool diagonalAllowed)
+    public static Vector3Int FindNearestByWalkingDistance(IBoard board, Vector3Int s, List<Vector3Int> locs, bool diagonalAllowed)
     {
+        if (locs.Count == 0)
+        {
+            return ControlVector;
+        }
+
         int minSteps = 10000;
         Vector3Int minLoc = new Vector3Int(0, 0, 0);
         foreach (Vector3Int l in locs)
         {
-            int steps = FindPath(tm, s, l, diagonalAllowed).Count;
+            int steps = FindPath(board, s, l, diagonalAllowed).Count;
             if (steps < minSteps)
             {
                 minSteps = steps;
@@ -102,7 +111,7 @@ public static class Navigator
     }
 
     //Using A*
-    public static List<Vector3Int> FindPath(Tilemap tilemap, Vector3Int start, Vector3Int goal, bool diagonalAllowed)
+    public static List<Vector3Int> FindPath(IBoard board, Vector3Int start, Vector3Int goal, bool diagonalAllowed)
     {
         if (start == goal)
         {
@@ -137,7 +146,7 @@ public static class Navigator
                 return l;
             }
 
-            List<Vector3Int> neighbors = FindNeighbors(current, tilemap, diagonalAllowed);
+            List<Vector3Int> neighbors = FindNeighbors(current, board, diagonalAllowed);
             foreach (Vector3Int n in neighbors)
             {
                 float tentativeScore = acs[current] + Distance(current, n);
@@ -154,7 +163,7 @@ public static class Navigator
             }
         }
 
-        return new List<Vector3Int>();
+        return new List<Vector3Int>() { ControlVector };
     }
 
     private static Vector3Int FirstStep()
@@ -162,7 +171,7 @@ public static class Navigator
         return new Vector3Int(0, 0, 0);
     }
 
-    private static List<Vector3Int> FindNeighbors(Vector3Int c, Tilemap tm, bool diag)
+    private static List<Vector3Int> FindNeighbors(Vector3Int c, IBoard board, bool diag)
     {
         List<Vector3Int> neighbors = new List<Vector3Int>();
         for (int x = -1; x <= 1; x++)
@@ -174,7 +183,7 @@ public static class Navigator
                 if (!diag && x != 0 && y != 0)
                     continue;
                 Vector3Int temp = c + new Vector3Int(x, y, 0);
-                if (tm.HasTile(temp) && tm.GetTile(temp).name != "Forbidden")
+                if (board.IsFree(temp))
                 {
                     neighbors.Add(temp);
                 }
@@ -182,5 +191,19 @@ public static class Navigator
         }
         //Debug.Log(neighbors.Count + " neighbors found for coordinate " + c);
         return neighbors;
+    }
+
+    public static bool IsWalkable(IBoard board, Vector3Int start, Vector3Int goal, bool diagonalAllowed)
+    {
+        Debug.Log($"Finding out if walk {start} -> {goal} is possible");
+        List<Vector3Int> path = FindPath(board, start, goal, diagonalAllowed);
+        if (path.Count == 1 && path[0] == ControlVector)
+        {
+            Debug.Log("Nope");
+            return false;
+        }
+        Debug.Log("Yep");
+        return true;
+
     }
 }

@@ -161,6 +161,29 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         return tilemap;
     }
 
+    public bool IsFree(Vector3Int loc)
+    {
+        if (!tilemap.HasTile(loc))
+        {
+            return false;
+        }
+
+        if (tilemap.GetTile(loc).name == "Forbidden")
+        {
+            return false;
+        }
+
+        foreach (ITarget t in targets.Values)
+        {
+            if (t.GetLocation() == loc)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public void ResetPathTiles()
     {
         for (int x = tilemap.cellBounds.xMin; x < tilemap.cellBounds.xMax; x++)

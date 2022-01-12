@@ -11,6 +11,7 @@ public interface IBoard
     public Vector3Int GetUnitLocation(System.Guid unitId);
     public Grid GetGrid();
     public Tilemap GetTilemap();
+    public bool IsFree(Vector3Int loc);
     public void ResetPathTiles();
     public void Deregister(System.Guid unitId);
 }

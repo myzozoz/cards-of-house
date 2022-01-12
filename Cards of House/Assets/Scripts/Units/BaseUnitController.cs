@@ -29,19 +29,20 @@ public class BaseUnitController : TargetController, IUnit
         Debug.Log($"Found target {target}");
         if (target == null)
         {
-            Debug.Log("Target is null");
+            Debug.Log("No target, releasing control");
+            return;
         }
         //Choose action strategy (walk, attack...)
         //Execute
-        List<Vector3Int> possibleLocations = Navigator.FindLocationsWithinAttackDistance(tm, target, primaryReach, secondaryReach);
-        Vector3Int closest = Navigator.FindNearestByWalkingDistance(tm, this.GetLocation(), possibleLocations, allowDiagonalMovement);
         //If target is in range, attack
-        Debug.Log($"Current: {this.GetLocation()} Closest: {closest}");
-        if (closest == this.GetLocation())
+        if (IsWithinAttackDistance(target))
         {
             Attack(target);
-        } else //otherwise walk
+        }
+        else //otherwise walk
         {
+            List<Vector3Int> possibleLocations = Navigator.FindLocationsWithinAttackDistance(board, this.GetLocation(), target, primaryReach, secondaryReach, allowDiagonalMovement);
+            Vector3Int closest = Navigator.FindNearestByWalkingDistance(board, this.GetLocation(), possibleLocations, allowDiagonalMovement);
             Approach(closest);
         }
     }
@@ -56,13 +57,15 @@ public class BaseUnitController : TargetController, IUnit
 
     private void Approach(Vector3Int location)
     {
+        Debug.Log($"Approaching {location}");
         Tilemap tm = board.GetTilemap();
-        List<Vector3Int> steps = Navigator.FindPath(tm, this.GetLocation(), location, allowDiagonalMovement);
+        List<Vector3Int> steps = Navigator.FindPath(board, this.GetLocation(), location, allowDiagonalMovement);
         board.ResetPathTiles();
         foreach (Vector3Int s in steps)
         {
             tm.SetTile(s, pathTile);
         }
+        Debug.Log($"steps: {steps.Count}");
         MoveTo(steps[steps.Count - 1]);
     }
 
@@ -104,19 +107,9 @@ public class BaseUnitController : TargetController, IUnit
 
 
         //Prioritize by nearest in attack distance
-        Debug.Log("Before attack distance sort");
-        foreach (ITarget t in sortedByTargetType)
-        {
-            Debug.Log($"\t{t}");
-        }
         List<ITarget> sortedByAttackDistance = SortByDistanceToAttack(sortedByTargetType);
-        Debug.Log("After attack distance sort");
-        foreach (ITarget t in sortedByAttackDistance)
-        {
-            Debug.Log($"\t{t}");
-        }
 
-        return sortedByAttackDistance[0];
+        return sortedByAttackDistance.Count > 0 ? sortedByAttackDistance[0] : null;
     }
 
     private List<ITarget> SortByTargetType(List<ITarget> targets, Dictionary<TargetType, float> priorities)
@@ -144,13 +137,14 @@ public class BaseUnitController : TargetController, IUnit
         //Find target distances
         foreach (ITarget t in targets)
         {
-            Debug.Log("Before finlasdfaf");
-            List<Vector3Int> possibleLocations = Navigator.FindLocationsWithinAttackDistance(board.GetTilemap(), t, primaryReach, secondaryReach);
-            Debug.Log("After finlasdfaf");
-            Vector3Int closest = Navigator.FindNearestByWalkingDistance(board.GetTilemap(), this.GetLocation(), possibleLocations, allowDiagonalMovement);
-            distances.Add(t, Navigator.FindPath(board.GetTilemap(), this.GetLocation(), closest, allowDiagonalMovement).Count);
+            List<Vector3Int> possibleLocations = Navigator.FindLocationsWithinAttackDistance(board, this.GetLocation(), t, primaryReach, secondaryReach, allowDiagonalMovement);
+            Debug.Log("possible locations");
+            foreach (Vector3Int v in possibleLocations) { Debug.Log(v); }
+            Vector3Int closest = Navigator.FindNearestByWalkingDistance(board, this.GetLocation(), possibleLocations, allowDiagonalMovement);
+            distances.Add(t, closest == Navigator.ControlVector ? -1 : Navigator.FindPath(board, this.GetLocation(), closest, allowDiagonalMovement).Count);
+
         }
-        
+
         //Sort by shortest distance
         foreach (ITarget t in targets)
         {
@@ -159,9 +153,13 @@ public class BaseUnitController : TargetController, IUnit
             {
                 i++;
             }
-            sorted.Insert(i, t);
+            if (distances[t] >= 0)
+            {
+                sorted.Insert(i, t);
+            }
         }
 
+        Debug.Log($"Sorted size: {sorted.Count}");
         return sorted;
     }
 
@@ -174,5 +172,19 @@ public class BaseUnitController : TargetController, IUnit
     public bool CanAct()
     {
         return canAct;
+    }
+
+    private bool IsWithinAttackDistance(ITarget target)
+    {
+        Vector3Int tl = target.GetLocation();
+        Vector3Int l = this.GetLocation();
+        Vector3Int dist = l - tl;
+        dist = new Vector3Int(Mathf.Abs(dist.x), Mathf.Abs(dist.y), Mathf.Abs(dist.z));
+        if ((dist.x == 0 && dist.y <= primaryReach)
+            || (dist.y == 0 && dist.x <= primaryReach)
+            || (dist.x == dist.y && dist.x <= secondaryReach))
+            return true;
+
+        return false;
     }
 }
