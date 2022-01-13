@@ -26,7 +26,6 @@ public class BaseUnitController : TargetController, IUnit
         //Choose target (enemy unit, enemy "player", powerup...)
 
         ITarget target = ChooseTarget(board.GetTargetsOnBoard());
-        Debug.Log($"Found target {target}");
         if (target == null)
         {
             Debug.Log("No target, releasing control");
@@ -51,7 +50,7 @@ public class BaseUnitController : TargetController, IUnit
     {
         //Attack animation stuff here
         float damage = Random.Range(minDamage, maxDamage);
-        Debug.Log($"Attacking for {damage} damage");
+        Debug.Log($"Attacking {target} for {damage} damage");
         target.TakeDamage(damage);
     }
 
@@ -65,7 +64,6 @@ public class BaseUnitController : TargetController, IUnit
         {
             tm.SetTile(s, pathTile);
         }
-        Debug.Log($"steps: {steps.Count}");
         MoveTo(steps[steps.Count - 1]);
     }
 
@@ -89,7 +87,7 @@ public class BaseUnitController : TargetController, IUnit
     private ITarget ChooseTarget(List<ITarget> targets)
     {
         List<ITarget> filteredList = new List<ITarget>();
-
+        Debug.Log($"Choosing target from {targets.Count} options");
         //Remove friendlies from list
         foreach (ITarget target in targets) {
             if (target != null && target.GetTeam() != team)
@@ -97,36 +95,52 @@ public class BaseUnitController : TargetController, IUnit
                 filteredList.Add(target);
             }
         }
+        Debug.Log($"After filtering frendlies: {filteredList.Count}");
         
         //Prioritize units over players
-        List<ITarget> sortedByTargetType = SortByTargetType(filteredList, new Dictionary<TargetType, float>() {
-            { TargetType.Unit, 1f },
-            { TargetType.Player, 2f },
-            { TargetType.PowerUp, 0f },
+        List<ITarget> filteredByTargetType = FilterByTargetType(filteredList, new List<TargetType>() {
+            TargetType.Unit,
+            TargetType.Player,
+            TargetType.PowerUp,
         });
-
+        Debug.Log($"After filtering by target type: {filteredByTargetType.Count}");
 
         //Prioritize by nearest in attack distance
-        List<ITarget> sortedByAttackDistance = SortByDistanceToAttack(sortedByTargetType);
+        List<ITarget> sortedByAttackDistance = SortByDistanceToAttack(filteredByTargetType);
+        Debug.Log($"After sorting by attack distance: {sortedByAttackDistance.Count}");
 
         return sortedByAttackDistance.Count > 0 ? sortedByAttackDistance[0] : null;
     }
 
-    private List<ITarget> SortByTargetType(List<ITarget> targets, Dictionary<TargetType, float> priorities)
+    private List<ITarget> FilterByTargetType(List<ITarget> targets, List<TargetType> priorities)
     {
-        List<ITarget> sorted = new List<ITarget>();
+        Dictionary<TargetType, List<ITarget>> targetLists = new Dictionary<TargetType, List<ITarget>>();
         foreach (ITarget t in targets)
         {
-            float tPrio = priorities.ContainsKey(t.GetTargetType()) ? priorities[t.GetTargetType()] : 1f;
-            int i = 0;
-            while (i < sorted.Count && tPrio >= priorities[sorted[i].GetTargetType()])
+            if (targetLists.ContainsKey(t.GetTargetType()))
             {
-                i++;
+                targetLists[t.GetTargetType()].Add(t);
             }
-            sorted.Insert(i, t);
+            else
+            {
+                targetLists[t.GetTargetType()] = new List<ITarget>() { t };
+            }
+        }
+        /*
+        foreach (TargetType tt in priorities)
+        {
+            Debug.Log($"Found {targetLists[tt]} targets of type {tt}");
+        }
+        */
+        foreach (TargetType tt in priorities)
+        {
+            if (targetLists.ContainsKey(tt) && targetLists[tt].Count > 0)
+            {
+                return targetLists[tt];
+            }
         }
 
-        return sorted;
+        return new List<ITarget>();
     }
 
     private List<ITarget> SortByDistanceToAttack(List<ITarget> targets)
@@ -138,11 +152,15 @@ public class BaseUnitController : TargetController, IUnit
         foreach (ITarget t in targets)
         {
             List<Vector3Int> possibleLocations = Navigator.FindLocationsWithinAttackDistance(board, this.GetLocation(), t, primaryReach, secondaryReach, allowDiagonalMovement);
+            if (IsWithinAttackDistance(t))
+            {
+                possibleLocations.Add(t.GetLocation());
+            }
+
             Debug.Log("possible locations");
             foreach (Vector3Int v in possibleLocations) { Debug.Log(v); }
             Vector3Int closest = Navigator.FindNearestByWalkingDistance(board, this.GetLocation(), possibleLocations, allowDiagonalMovement);
             distances.Add(t, closest == Navigator.ControlVector ? -1 : Navigator.FindPath(board, this.GetLocation(), closest, allowDiagonalMovement).Count);
-
         }
 
         //Sort by shortest distance
@@ -159,7 +177,7 @@ public class BaseUnitController : TargetController, IUnit
             }
         }
 
-        Debug.Log($"Sorted size: {sorted.Count}");
+        //Debug.Log($"Sorted size: {sorted.Count}");
         return sorted;
     }
 
@@ -178,13 +196,17 @@ public class BaseUnitController : TargetController, IUnit
     {
         Vector3Int tl = target.GetLocation();
         Vector3Int l = this.GetLocation();
-        Vector3Int dist = l - tl;
-        dist = new Vector3Int(Mathf.Abs(dist.x), Mathf.Abs(dist.y), Mathf.Abs(dist.z));
+        Vector3Int dist = AbsVec(l - tl);
         if ((dist.x == 0 && dist.y <= primaryReach)
             || (dist.y == 0 && dist.x <= primaryReach)
             || (dist.x == dist.y && dist.x <= secondaryReach))
             return true;
 
         return false;
+    }
+
+    private Vector3Int AbsVec(Vector3Int v)
+    {
+        return new Vector3Int(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));
     }
 }

@@ -3,7 +3,7 @@
     "m_SelectedPackage": {
         "deviceId": "FPMNW18815002865",
         "name": "com.DefaultCompany.com.unity.template.mobile2D",
-        "processId": 10762,
+        "processId": 29176,
         "exited": false
     },
     "m_SelectedPriority": 0,
@@ -12,6 +12,12 @@
             "deviceId": "FPMNW18815002865",
             "name": "com.DefaultCompany.com.unity.template.mobile2D",
             "processId": 10762,
+            "exited": false
+        },
+        {
+            "deviceId": "FPMNW18815002865",
+            "name": "com.DefaultCompany.com.unity.template.mobile2D",
+            "processId": 29176,
             "exited": false
         }
     ],

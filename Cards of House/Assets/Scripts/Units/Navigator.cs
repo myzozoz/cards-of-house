@@ -9,7 +9,7 @@ public static class Navigator
 
     public static List<Vector3Int> FindLocationsWithinAttackDistance(IBoard board, Vector3Int start, ITarget target, int pReach, int sReach, bool diagonalAllowed)
     {
-        Debug.Log($"Moving into finding locations within attack distance for target {target}{target.GetLocation()}");
+        //Debug.Log($"Moving into finding locations within attack distance for target {target}{target.GetLocation()}");
         List<Vector3Int> locationList = new List<Vector3Int>();
         Vector3Int tLoc = target.GetLocation();
         Vector3Int tempLoc;
@@ -62,8 +62,8 @@ public static class Navigator
                 locationList.Add(tempLoc);
             }
         }
-        Debug.Log($"Found {locationList.Count} possible attack locations");
-        foreach ( Vector3Int v in locationList ) { Debug.Log(v); }
+        //Debug.Log($"Found {locationList.Count} possible attack locations");
+        //foreach ( Vector3Int v in locationList ) { Debug.Log(v); }
         return locationList;
     }
 
@@ -195,15 +195,11 @@ public static class Navigator
 
     public static bool IsWalkable(IBoard board, Vector3Int start, Vector3Int goal, bool diagonalAllowed)
     {
-        Debug.Log($"Finding out if walk {start} -> {goal} is possible");
         List<Vector3Int> path = FindPath(board, start, goal, diagonalAllowed);
         if (path.Count == 1 && path[0] == ControlVector)
         {
-            Debug.Log("Nope");
             return false;
         }
-        Debug.Log("Yep");
         return true;
-
     }
 }
