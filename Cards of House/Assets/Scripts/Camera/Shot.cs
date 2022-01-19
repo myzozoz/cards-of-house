@@ -1,11 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public struct Shot
 {
-    public string Name { get; set; }
-    public Vector3 TargetPosition { get; set; }
-    public Vector3 CameraRotation { get; set; }
-    public Vector3 CameraOffset { get; set; }
+    public string Name;
+    public Transform TargetTransform;
+    public Vector3 CameraRotation;
+    public Vector3 CameraOffset;
+    
+    public Shot(string name, Transform targetTransform, Vector3 cameraRotation, Vector3 cameraOffset)
+    {
+        Name = name;
+        TargetTransform = targetTransform;
+        CameraRotation = cameraRotation;
+        CameraOffset = cameraOffset;
+    }
 }

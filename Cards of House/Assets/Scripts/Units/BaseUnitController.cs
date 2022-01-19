@@ -221,4 +221,9 @@ public class BaseUnitController : TargetController, IUnit
     {
         return transform.position;
     }
+
+    public Transform GetTransform()
+    {
+        return transform;
+    }
 }

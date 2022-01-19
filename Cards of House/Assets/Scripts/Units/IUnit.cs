@@ -7,4 +7,5 @@ public interface IUnit: ITarget
     public void Execute();
     public bool CanAct();
     public Vector3 GetPosition();
+    public Transform GetTransform();
 }

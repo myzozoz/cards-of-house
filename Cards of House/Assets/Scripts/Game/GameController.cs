@@ -39,8 +39,6 @@ public class GameController : MonoBehaviour
         cam = cameraTarget.GetComponent<ICameraController>();
         stageText.text = $"Stage: {stage.ToString()}";
         Debug.Log($"TableObject position: {tableObject.transform.position}");
-        cam.AddShot("Board", boardObject.transform.position, boardCamRotation, boardCamOffset);
-        cam.AddShot("Table", tableObject.transform.position, tableCamRotation, tableCamOffset);
         board.SetCam(cam);
     }
 

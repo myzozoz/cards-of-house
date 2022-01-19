@@ -61,7 +61,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
             IUnit current = units[currentId];
             if (!cam.HasShot(currentId.ToString()))
             {
-                cam.AddShot(currentId.ToString(), current.GetPosition(), unitCamRotation, unitCamOffset);
+                cam.AddShot(currentId.ToString(), current.GetTransform(), $"Unit_{current.GetTeam()}");
             }
             cam.TransitionTo(currentId.ToString());
             //Debug.Log("Now in turn: " + current);
