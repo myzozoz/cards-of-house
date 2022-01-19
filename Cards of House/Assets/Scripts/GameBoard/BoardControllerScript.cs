@@ -18,6 +18,9 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     private Dictionary<System.Guid, ITarget> targets;
     private Queue<System.Guid> actionQueue;
     private HashSet<System.Guid> deregisterBuffer;
+    private ICameraController cam;
+    private Vector3 unitCamRotation = new Vector3(50f, 0f, 0f);
+    private Vector3 unitCamOffset = new Vector3(0f, 8.5f, -6f);
     // Start is called before the first frame update
     void Start()
     {
@@ -56,6 +59,11 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         System.Guid currentId = actionQueue.Dequeue();
         if (!deregisterBuffer.Contains(currentId)) {
             IUnit current = units[currentId];
+            if (!cam.HasShot(currentId.ToString()))
+            {
+                cam.AddShot(currentId.ToString(), current.GetPosition(), unitCamRotation, unitCamOffset);
+            }
+            cam.TransitionTo(currentId.ToString());
             //Debug.Log("Now in turn: " + current);
             //Do actions
             current.Execute();
@@ -66,7 +74,6 @@ public class BoardControllerScript : MonoBehaviour, IBoard
             UpdateUnits();
             deregisterBuffer.Remove(currentId);
         }
-        
     }
 
     private void OverrideBoxFill2D(Vector3Int start, TileBase tile, int startX, int startY, int endX, int endY)
@@ -133,7 +140,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
                 targets.Add(target.GetId(), target);
             }
         }
-        Debug.Log($"A total of {targetList.Count} targets found");
+        //Debug.Log($"A total of {targetList.Count} targets found");
     }
 
     public List<IUnit> GetUnitsOnBoard()
@@ -204,5 +211,23 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         deregisterBuffer.Add(unitId);
         UpdateUnits();
         UpdateTargets();
+    }
+
+    public void SpawnUnit(GameObject unit, Vector3Int spawnLocation)
+    {
+        GameObject go = Instantiate(unit, tilemap.GetCellCenterWorld(spawnLocation), Quaternion.Euler(0,0,0), this.transform);
+        IUnit unitController = go.GetComponent<IUnit>();
+        if (unitController != null)
+        {
+            actionQueue.Enqueue(unitController.GetId());
+        }
+        UpdateUnits();
+        UpdateTargets();
+    }
+
+    public void SetCam(ICameraController camController)
+    {
+        cam = camController;
+        Debug.Log(cam);
     }
 }

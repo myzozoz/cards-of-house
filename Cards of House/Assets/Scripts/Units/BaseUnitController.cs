@@ -14,6 +14,13 @@ public class BaseUnitController : TargetController, IUnit
     public float minDamage;
     public bool allowDiagonalMovement;
 
+
+    new void Start()
+    {
+        base.Start();
+        transform.position = new Vector3(transform.position.x,heightOffset, transform.position.z);
+    }
+
     public void Execute()
     {
         
@@ -87,7 +94,7 @@ public class BaseUnitController : TargetController, IUnit
     private ITarget ChooseTarget(List<ITarget> targets)
     {
         List<ITarget> filteredList = new List<ITarget>();
-        Debug.Log($"Choosing target from {targets.Count} options");
+        //Debug.Log($"Choosing target from {targets.Count} options");
         //Remove friendlies from list
         foreach (ITarget target in targets) {
             if (target != null && target.GetTeam() != team)
@@ -95,7 +102,7 @@ public class BaseUnitController : TargetController, IUnit
                 filteredList.Add(target);
             }
         }
-        Debug.Log($"After filtering frendlies: {filteredList.Count}");
+        //Debug.Log($"After filtering frendlies: {filteredList.Count}");
         
         //Prioritize units over players
         List<ITarget> filteredByTargetType = FilterByTargetType(filteredList, new List<TargetType>() {
@@ -103,11 +110,11 @@ public class BaseUnitController : TargetController, IUnit
             TargetType.Player,
             TargetType.PowerUp,
         });
-        Debug.Log($"After filtering by target type: {filteredByTargetType.Count}");
+        //Debug.Log($"After filtering by target type: {filteredByTargetType.Count}");
 
         //Prioritize by nearest in attack distance
         List<ITarget> sortedByAttackDistance = SortByDistanceToAttack(filteredByTargetType);
-        Debug.Log($"After sorting by attack distance: {sortedByAttackDistance.Count}");
+        //Debug.Log($"After sorting by attack distance: {sortedByAttackDistance.Count}");
 
         return sortedByAttackDistance.Count > 0 ? sortedByAttackDistance[0] : null;
     }
@@ -157,8 +164,8 @@ public class BaseUnitController : TargetController, IUnit
                 possibleLocations.Add(t.GetLocation());
             }
 
-            Debug.Log("possible locations");
-            foreach (Vector3Int v in possibleLocations) { Debug.Log(v); }
+            //Debug.Log("possible locations");
+            //foreach (Vector3Int v in possibleLocations) { Debug.Log(v); }
             Vector3Int closest = Navigator.FindNearestByWalkingDistance(board, this.GetLocation(), possibleLocations, allowDiagonalMovement);
             distances.Add(t, closest == Navigator.ControlVector ? -1 : Navigator.FindPath(board, this.GetLocation(), closest, allowDiagonalMovement).Count);
         }
@@ -208,5 +215,10 @@ public class BaseUnitController : TargetController, IUnit
     private Vector3Int AbsVec(Vector3Int v)
     {
         return new Vector3Int(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));
+    }
+
+    public Vector3 GetPosition()
+    {
+        return transform.position;
     }
 }

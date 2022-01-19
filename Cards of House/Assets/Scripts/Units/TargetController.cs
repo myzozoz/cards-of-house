@@ -19,17 +19,12 @@ public class TargetController : MonoBehaviour, ITarget
     }
 
     // Start is called before the first frame update
-    void Start()
+    protected void Start()
     {
         board = transform.parent.GetComponent<IBoard>();
         grid = board.GetGrid();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     void FixedUpdate()
     {

@@ -14,4 +14,6 @@ public interface IBoard
     public bool IsFree(Vector3Int loc);
     public void ResetPathTiles();
     public void Deregister(System.Guid unitId);
+    public void SpawnUnit(GameObject unit, Vector3Int spawnLocation);
+    public void SetCam(ICameraController camController);
 }
