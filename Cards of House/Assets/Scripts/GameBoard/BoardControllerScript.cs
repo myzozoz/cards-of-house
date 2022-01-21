@@ -228,6 +228,5 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     public void SetCam(ICameraController camController)
     {
         cam = camController;
-        Debug.Log(cam);
     }
 }

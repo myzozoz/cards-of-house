@@ -23,7 +23,6 @@ public class CameraController : MonoBehaviour, ICameraController
 
     void Start()
     {
-        animTime = transitionTime + 1f;
         shots = LoadShotsFromFile();
         cam = Camera.main;
     }
@@ -38,12 +37,13 @@ public class CameraController : MonoBehaviour, ICameraController
 
     private IEnumerator MoveCamera()
     {
-        while (animTime <= transitionTime)
+        float customAnimationTime = 0f;
+        while (customAnimationTime <= transitionTime)
         {
-            animTime += Time.deltaTime;
-            transform.position = Vector3.Lerp(animStartShot.TargetTransform.position, targetShot.TargetTransform.position, transitionCurve.Evaluate(animTime / transitionTime));
-            cam.transform.eulerAngles = Vector3.Lerp(animStartShot.CameraRotation, targetShot.CameraRotation, transitionCurve.Evaluate(animTime / transitionTime));
-            cam.transform.position = Vector3.Lerp(animStartShot.CameraOffset, targetShot.TargetTransform.position + targetShot.CameraOffset, transitionCurve.Evaluate(animTime / transitionTime));
+            customAnimationTime += Time.deltaTime;
+            transform.position = Vector3.Lerp(animStartShot.TargetTransform.position, targetShot.TargetTransform.position, transitionCurve.Evaluate(customAnimationTime / transitionTime));
+            cam.transform.eulerAngles = Vector3.Lerp(animStartShot.CameraRotation, targetShot.CameraRotation, transitionCurve.Evaluate(customAnimationTime / transitionTime));
+            cam.transform.position = Vector3.Lerp(animStartShot.CameraOffset, targetShot.TargetTransform.position + targetShot.CameraOffset, transitionCurve.Evaluate(customAnimationTime / transitionTime));
             yield return null;
         }
     }
@@ -78,8 +78,7 @@ public class CameraController : MonoBehaviour, ICameraController
 
         animStartShot = new Shot("Current", transform, cam.transform.eulerAngles, cam.transform.position);
         targetShot = shots[shot];
-        animTime = 0;
-
+        StopAllCoroutines();
         StartCoroutine(MoveCamera());
     }
 
@@ -90,7 +89,7 @@ public class CameraController : MonoBehaviour, ICameraController
             Debug.Log("Could not find shot " + shot);
             return;
         }
-
+        
         Debug.Log($"Moving to follow {targetObject} with shot {shots[shot].Name}");
         //animStartShot = new Shot("Current", transform, cam.transform.eulerAngles, cam.transform.position);
 

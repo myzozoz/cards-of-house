@@ -27,18 +27,15 @@ public class GameController : MonoBehaviour
     private IBoard board;
     private ICameraController cam;
 
-    private Vector3 boardCamRotation = new Vector3(60f, 0f, 0f);
-    private Vector3 boardCamOffset = new Vector3(2.5f, 15f, -4.3f);
-    private Vector3 tableCamRotation = new Vector3(45f, 0f, 0f);
-    private Vector3 tableCamOffset = new Vector3(0f, 6.6f, -6.7f);
-
     // Start is called before the first frame update
     void Start()
     {
         board = boardObject.GetComponent<IBoard>();
         cam = cameraTarget.GetComponent<ICameraController>();
         stageText.text = $"Stage: {stage.ToString()}";
-        Debug.Log($"TableObject position: {tableObject.transform.position}");
+        cam.AddShot("Board", boardObject.transform, "Board");
+        cam.AddShot("Table", tableObject.transform, "Table");
+
         board.SetCam(cam);
     }
 

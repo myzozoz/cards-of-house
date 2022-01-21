@@ -57,13 +57,13 @@ public class BaseUnitController : TargetController, IUnit
     {
         //Attack animation stuff here
         float damage = Random.Range(minDamage, maxDamage);
-        Debug.Log($"Attacking {target} for {damage} damage");
+        //Debug.Log($"Attacking {target} for {damage} damage");
         target.TakeDamage(damage);
     }
 
     private void Approach(Vector3Int location)
     {
-        Debug.Log($"Approaching {location}");
+        //Debug.Log($"Approaching {location}");
         Tilemap tm = board.GetTilemap();
         List<Vector3Int> steps = Navigator.FindPath(board, this.GetLocation(), location, allowDiagonalMovement);
         board.ResetPathTiles();
