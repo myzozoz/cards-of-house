@@ -38,8 +38,8 @@ Material:
     m_Floats:
     - Vector1_c677439df9d74775835d99dc5ba2f11c: 0.85
     - Vector1_d1dbd7322e374deb87fe447755840e28: 1.05
-    - _CustomAlpha: 0.802
+    - _CustomAlpha: 0
     m_Colors:
     - Color_3dec21ecc74d4382b8d9adb3f6f98b96: {r: 1, g: 0.6711093, b: 0, a: 0}
-    - _Color: {r: 0, g: 0.5716192, b: 0, a: 0}
+    - _Color: {r: 0, g: 0.7717738, b: 1, a: 0}
   m_BuildTextureStacks: []

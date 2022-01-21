@@ -21,6 +21,12 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     private ICameraController cam;
     private Vector3 unitCamRotation = new Vector3(50f, 0f, 0f);
     private Vector3 unitCamOffset = new Vector3(0f, 8.5f, -6f);
+    [SerializeField]
+    private short roundsPerStage = 12;
+    private short roundsSimulated;
+    private bool ready;
+    [SerializeField]
+    private Transform spawnTransform;
     // Start is called before the first frame update
     void Start()
     {
@@ -40,7 +46,28 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         {
             actionQueue.Enqueue(unit.GetId());
         }
+        ready = true;
+        roundsSimulated = 0;
     }
+
+    public bool Ready()
+    {
+        return ready;
+    }
+
+    public void Initialize()
+    {
+        ready = false;
+        roundsSimulated = 0;
+        UpdateUnits();
+        UpdateTargets();
+    }
+
+    public void End()
+    {
+        // clean up
+    }
+
 
     // Update is called once per frame
     void Update()
@@ -69,10 +96,17 @@ public class BoardControllerScript : MonoBehaviour, IBoard
             current.Execute();
             //Back to the queue
             actionQueue.Enqueue(currentId);
+            roundsSimulated++;
         } else {
             UpdateTargets();
             UpdateUnits();
             deregisterBuffer.Remove(currentId);
+        }
+
+        Debug.Log($"Rounds simulated: {roundsSimulated}/{roundsPerStage} (ready:{ready})");
+        if (roundsSimulated >= roundsPerStage)
+        {
+            ready = true;
         }
     }
 
@@ -228,5 +262,10 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     public void SetCam(ICameraController camController)
     {
         cam = camController;
+    }
+
+    public Transform GetSpawnCenterTransform()
+    {
+        return spawnTransform;
     }
 }

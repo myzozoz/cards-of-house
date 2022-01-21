@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public interface IBoard
+public interface IBoard: IStage
 {
     public void Step();
     public List<IUnit> GetUnitsOnBoard();
@@ -16,4 +16,5 @@ public interface IBoard
     public void Deregister(System.Guid unitId);
     public void SpawnUnit(GameObject unit, Vector3Int spawnLocation);
     public void SetCam(ICameraController camController);
+    public Transform GetSpawnCenterTransform();
 }
