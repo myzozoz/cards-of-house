@@ -17,4 +17,8 @@ public interface IBoard: IStage
     public void SpawnUnit(GameObject unit, Vector3Int spawnLocation);
     public void SetCam(ICameraController camController);
     public Transform GetSpawnCenterTransform();
+    public void EnableSpawnSelection();
+    public void DisableSpawnSelection();
+    public void RegisterSpawnTile(SpawnRim tile);
+    public void TrySelectSpawnTile(SpawnRim tile);
 }

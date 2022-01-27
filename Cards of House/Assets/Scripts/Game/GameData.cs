@@ -5,27 +5,29 @@ using UnityEngine.UI;
 
 //This is a data container for the GameController class, but
 //which exposes its data to outside functions
-public class GameData : MonoBehaviour
+public class GameData : GenericSingleton<GameData>
 {
     [SerializeField]
-    protected Text stageText;
+    private GameObject boardObject;
     [SerializeField]
-    protected Stage stage;
+    private GameObject tableObject;
+    [SerializeField]
+    private GameObject handObject;
+    [SerializeField]
+    private Stage stage;
 
-    protected List<ICard> handCards;
-
-    protected Dictionary<Stage, string> defaultCameras;
-
-    // Start is called before the first frame update
-    protected void Start()
-    {
-        handCards = new List<ICard>();
-        defaultCameras = new Dictionary<Stage, string>()
+    private List<ICard> handCards;
+    private Dictionary<Stage, string> defaultCameras = new Dictionary<Stage, string>()
         {
             {Stage.Pick, "Table"},
             {Stage.Place, "Hand"},
             {Stage.Simulate, "Board" }
         };
+
+// Start is called before the first frame update
+    protected void Start()
+    {
+        handCards = new List<ICard>();
     }
 
     // Update is called once per frame
@@ -46,5 +48,37 @@ public class GameData : MonoBehaviour
             Debug.Log("Hand size is supposed to be 3 >:(");
         }
         handCards = cards;
+    }
+
+    public List<ICard> HandCards
+    {
+        get { return handCards; }
+        set { handCards = value; }
+    }
+
+    public Stage CurrentStage
+    {
+        get { return stage; }
+        set { stage = value; }
+    }
+
+    public Dictionary<Stage, string> DefaultCameras
+    {
+        get { return defaultCameras; }
+    }
+
+    public GameObject BoardObject
+    {
+        get { return boardObject; }
+    }
+
+    public GameObject TableObject
+    {
+        get { return tableObject; }
+    }
+
+    public GameObject HandObject
+    {
+        get { return handObject; }
     }
 }

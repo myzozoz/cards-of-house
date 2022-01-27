@@ -4,15 +4,13 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class GameController : GameData
+public class GameController : GenericSingleton<GameController>
 {
-    public GameObject boardObject;
-    public GameObject tableObject;
-    [SerializeField]
-    private GameObject handObject;
     public GameObject cameraTarget;
     [SerializeField]
     public GameObject testUnit;
+    [SerializeField]
+    private Text stageText;
 
     private IBoard board;
     private ITable table;
@@ -20,22 +18,21 @@ public class GameController : GameData
     private ICameraController cam;
 
     // Start is called before the first frame update
-    new void Start()
+    void Start()
     {
-        base.Start();
-        board = boardObject.GetComponent<IBoard>();
-        table = tableObject.GetComponent<ITable>();
-        hand = handObject.GetComponent<IHand>();
+        board = GameData.Instance.BoardObject.GetComponent<IBoard>();
+        table = GameData.Instance.TableObject.GetComponent<ITable>();
+        hand = GameData.Instance.HandObject.GetComponent<IHand>();
+
         cam = cameraTarget.GetComponent<ICameraController>();
-        cam.AddShot("Board", boardObject.transform, "Board");
-        cam.AddShot("Table", tableObject.transform, "Table");
+        cam.AddShot("Board", GameData.Instance.BoardObject.transform, "Board");
+        cam.AddShot("Table", GameData.Instance.TableObject.transform, "Table");
         cam.AddShot("Hand", board.GetSpawnCenterTransform(), "Spawn_0");
         cam.AddShot("HandExpanded", board.GetSpawnCenterTransform(), "Spawn_1");
-
         board.SetCam(cam);
-
-        cam.TransitionTo(defaultCameras[stage]);
-        Debug.Log($"Initial stage: {stage.ToString()}");
+        Debug.Log($"Debug: {GameData.Instance.DefaultCameras}");
+        cam.TransitionTo(GameData.Instance.DefaultCameras[GameData.Instance.CurrentStage]);
+        Debug.Log($"Initial stage: {GameData.Instance.CurrentStage.ToString()}");
     }
 
     // Update is called once per frame
@@ -47,7 +44,7 @@ public class GameController : GameData
             Stop();
         }
 
-        if (stage == Stage.Simulate && Input.GetKeyDown(KeyCode.RightArrow))
+        if (GameData.Instance.CurrentStage == Stage.Simulate && Input.GetKeyDown(KeyCode.RightArrow))
         {
             board.Step();
         }
@@ -59,17 +56,17 @@ public class GameController : GameData
 
         if (Input.GetKeyDown(KeyCode.T))
         {
-            cam.TransitionTo(defaultCameras[Stage.Place]);
+            cam.TransitionTo(GameData.Instance.DefaultCameras[Stage.Place]);
         }
 
         if (Input.GetKeyDown(KeyCode.B))
         {
-            cam.TransitionTo(defaultCameras[Stage.Simulate]);
+            cam.TransitionTo(GameData.Instance.DefaultCameras[Stage.Simulate]);
         }
 
         if (Input.GetKeyDown(KeyCode.O))
         {
-            cam.TransitionTo(defaultCameras[Stage.Place]);
+            cam.TransitionTo(GameData.Instance.DefaultCameras[Stage.Place]);
         }
 
         if (Input.GetKeyDown(KeyCode.L))
@@ -77,12 +74,12 @@ public class GameController : GameData
             cam.TransitionTo("HandExpanded");
         }
 
-        stageText.text = $"Stage: {stage.ToString()}";
+        stageText.text = $"Stage: {GameData.Instance.CurrentStage.ToString()}";
     }
 
     void FixedUpdate()
     {
-        switch (stage)
+        switch (GameData.Instance.CurrentStage)
         {
             case Stage.Pick:
                 PickRoutine();
@@ -107,9 +104,10 @@ public class GameController : GameData
     {
         if (table.Ready())
         {
-            stage = Stage.Place;
+            table.End();
+            GameData.Instance.CurrentStage = Stage.Place;
             hand.Initialize();
-            cam.TransitionTo(defaultCameras[Stage.Place]);
+            cam.TransitionTo(GameData.Instance.DefaultCameras[Stage.Place]);
         }
     }
 
@@ -117,9 +115,10 @@ public class GameController : GameData
     {
         if (hand.Ready())
         {
-            stage = Stage.Simulate;
+            hand.End();
+            GameData.Instance.CurrentStage = Stage.Simulate;
             board.Initialize();
-            cam.TransitionTo(defaultCameras[Stage.Simulate]);
+            cam.TransitionTo(GameData.Instance.DefaultCameras[Stage.Simulate]);
         }
     }
 
@@ -127,9 +126,10 @@ public class GameController : GameData
     {
         if (board.Ready())
         {
-            stage = Stage.Pick;
+            board.End();
+            GameData.Instance.CurrentStage = Stage.Pick;
             table.Initialize();
-            cam.TransitionTo(defaultCameras[Stage.Pick]);
+            cam.TransitionTo(GameData.Instance.DefaultCameras[Stage.Pick]);
         }
     }
 }

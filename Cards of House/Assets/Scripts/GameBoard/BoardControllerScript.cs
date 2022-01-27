@@ -14,11 +14,16 @@ public class BoardControllerScript : MonoBehaviour, IBoard
 
     private Grid grid;
     private Tilemap tilemap;
-    private Dictionary<System.Guid, IUnit> units;
-    private Dictionary<System.Guid, ITarget> targets;
-    private Queue<System.Guid> actionQueue;
-    private HashSet<System.Guid> deregisterBuffer;
+    private Dictionary<System.Guid, IUnit> units = new Dictionary<System.Guid, IUnit>();
+    private Dictionary<System.Guid, ITarget> targets = new Dictionary<System.Guid, ITarget>();
+    private Queue<System.Guid> actionQueue = new Queue<System.Guid>();
+    private HashSet<System.Guid> deregisterBuffer = new HashSet<System.Guid>();
+    private HashSet<SpawnRim> spawnTiles = new HashSet<SpawnRim>();
+    private Dictionary<ICard, SpawnRim> selectedSpawns = new Dictionary<ICard, SpawnRim>();
+
+
     private ICameraController cam;
+    private IHand hand;
     private Vector3 unitCamRotation = new Vector3(50f, 0f, 0f);
     private Vector3 unitCamOffset = new Vector3(0f, 8.5f, -6f);
     [SerializeField]
@@ -32,10 +37,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     {
         grid = transform.GetComponent<Grid>();
         tilemap = transform.GetComponentInChildren<Tilemap>();
-        units = new Dictionary<System.Guid, IUnit>();
-        targets = new Dictionary<System.Guid, ITarget>();
-        actionQueue = new Queue<System.Guid>();
-        deregisterBuffer = new HashSet<System.Guid>();
+        hand = GameData.Instance.HandObject.GetComponent<IHand>();
         if (tilemap == null)
         {
             Debug.Log("No Tilemap found, please check that one such exists");
@@ -59,6 +61,19 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     {
         ready = false;
         roundsSimulated = 0;
+
+        foreach (ICard c in selectedSpawns.Keys)
+        {
+            SpawnUnit(c.GetSpawnableUnit(), grid.WorldToCell(selectedSpawns[c].Position));
+            c.Delete();
+        }
+        selectedSpawns.Clear();
+
+        foreach (SpawnRim sr in spawnTiles)
+        {
+            sr.SpawnState = SpawnRim.State.Offline;
+        }
+
         UpdateUnits();
         UpdateTargets();
     }
@@ -267,5 +282,48 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     public Transform GetSpawnCenterTransform()
     {
         return spawnTransform;
+    }
+
+    public void EnableSpawnSelection()
+    {
+        ICard c = hand.GetSelectedCard();
+        if (selectedSpawns.ContainsKey(c))
+        {
+            //unselect spawn
+            selectedSpawns[c].SpawnState = SpawnRim.State.Selectable;
+            //remove spawn from selected spawns
+            selectedSpawns.Remove(c);
+        }
+
+        foreach (SpawnRim sr in spawnTiles)
+        {
+            if (sr.SpawnState == SpawnRim.State.Offline || sr.SpawnState == SpawnRim.State.Inactive)
+                sr.SpawnState = SpawnRim.State.Selectable;
+        }
+    }
+
+    public void DisableSpawnSelection()
+    {
+        foreach (SpawnRim sr in spawnTiles)
+        {
+            if (sr.SpawnState == SpawnRim.State.Selectable)
+                sr.SpawnState = SpawnRim.State.Inactive;
+        }
+    }
+
+    public void RegisterSpawnTile(SpawnRim tile)
+    {
+        spawnTiles.Add(tile);
+    }
+
+    public void TrySelectSpawnTile(SpawnRim tile)
+    {
+        // We can select tile if tile is unselected
+        if (!selectedSpawns.ContainsValue(tile))
+        {
+            selectedSpawns.Add(hand.GetSelectedCard(), tile);
+            hand.LockSelectedCard();
+            tile.SpawnState = SpawnRim.State.Locked;
+        }
     }
 }

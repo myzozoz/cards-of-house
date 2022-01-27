@@ -14,12 +14,10 @@ public class TableController : MonoBehaviour, ITable
     private HashSet<System.Guid> selectedCards;
     private bool canSubmit;
     private bool ready;
-    private GameData data;
 
     // Start is called before the first frame update
     void Start()
     {
-        data = GameObject.FindWithTag("GameController").GetComponent<GameData>();
         Initialize();
     }
 
@@ -37,29 +35,33 @@ public class TableController : MonoBehaviour, ITable
         foreach (ICard c in cardList)
         {
             cards.Add(c.GetId(), c);
-            c.SetSelected(false);
+            c.CardState = Card.State.Selectable;
         }
         ready = false;
         UpdateCanSubmit();
     }
 
-    public bool TryToggleSelect(System.Guid id)
+    public void TryToggleSelect(System.Guid id)
     {
         if (selectedCards.Contains(id))
         {
+            if (ReadyToSubmit())
+            {
+                foreach (System.Guid _id in selectedCards)
+                {
+                    cards[_id].CardState = Card.State.Selected;
+                }
+            }
             selectedCards.Remove(id);
+            cards[id].CardState = Card.State.Selectable;
             UpdateCanSubmit();
-            return true;
         }
-
-        if (selectedCards.Count < maxSelections)
+        else if (selectedCards.Count < maxSelections)
         {
             selectedCards.Add(id);
+            cards[id].CardState = Card.State.Selected;
             UpdateCanSubmit();
-            return true;
         }
-
-        return false;
     }
 
     public bool ReadyToSubmit()
@@ -71,20 +73,25 @@ public class TableController : MonoBehaviour, ITable
     {
         canSubmit = selectedCards.Count == maxSelections;
         submitButton.interactable = canSubmit;
+        if (canSubmit)
+        {
+            foreach (System.Guid _id in selectedCards)
+            {
+                cards[_id].CardState = Card.State.Ready;
+            }
+        }
     }
 
     public void SubmitCards()
     {
-        Debug.Log("Submitting cards");
         List<ICard> hand = new List<ICard>();
         foreach (System.Guid id in selectedCards)
         {
             hand.Add(cards[id]);
         }
 
-        data.SetHandCards(hand);
+        GameData.Instance.HandCards = hand;
         ready = true;
-        
     }
 
     public bool Ready()
