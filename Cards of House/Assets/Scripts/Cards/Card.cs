@@ -54,7 +54,7 @@ public class Card : MonoBehaviour, ICard, IClickable
         }
         outlineMat.SetFloat("_CustomAlpha", .6f);
         UpdateColor();
-        state = State.Offline;
+        //state = State.Offline;
     }
 
     // Update is called once per frame
@@ -130,7 +130,7 @@ public class Card : MonoBehaviour, ICard, IClickable
         Vector3 startPos = transform.position;
         Vector3 startRot = transform.eulerAngles;
         startRot = new Vector3((startRot.x % 360) > 180 ? (startRot.x % 360) - 360 : (startRot.x % 360), startRot.y, startRot.z);
-        Debug.Log($"Start fly animation from {startPos}/{startRot} to {pos}/{rot}");
+        //Debug.Log($"Start fly animation from {startPos}/{startRot} to {pos}/{rot}");
         while (customAnimationTime <= transitionTime)
         {
             customAnimationTime += Time.deltaTime;

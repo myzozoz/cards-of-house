@@ -21,7 +21,7 @@ public class InputController : MonoBehaviour
             if (Physics.Raycast(ray, out hit))
             {
                 Transform objectHit = hit.transform;
-                //Debug.Log($"Ray cast from screen hit {objectHit}");
+                Debug.Log($"Ray cast from screen hit {objectHit}");
 
                 IClickable c = objectHit.GetComponent<IClickable>();
                 if (c != null)
