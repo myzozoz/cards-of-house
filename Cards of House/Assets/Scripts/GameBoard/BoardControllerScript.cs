@@ -99,6 +99,10 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         // clean up
     }
 
+    public int Round
+    {
+        get { return roundsSimulated+1; }
+    }
 
     // Update is called once per frame
     void Update()
@@ -108,37 +112,69 @@ public class BoardControllerScript : MonoBehaviour, IBoard
             //AddRandomForbiddenTiles(forbiddenTiles);
             Debug.Log($"Units in queue {actionQueue.Count}");
             Debug.Log($"Ids in deregister buffer {deregisterBuffer.Count}");
+            foreach (System.Guid id in deregisterBuffer)
+            {
+                Debug.Log($"{id}");
+            }
         }
 
     }
 
-    public void Step()
-    {
-        System.Guid currentId = actionQueue.Dequeue();
-        if (!deregisterBuffer.Contains(currentId)) {
-            IUnit current = units[currentId];
-            if (!cam.HasShot(currentId.ToString()))
-            {
-                cam.AddShot(currentId.ToString(), current.GetTransform(), $"Unit_{current.GetTeam()}");
-            }
-            cam.TransitionTo(currentId.ToString());
-            //Debug.Log("Now in turn: " + current);
-            //Do actions
-            current.Execute();
-            //Back to the queue
-            actionQueue.Enqueue(currentId);
-            roundsSimulated++;
-        } else {
-            UpdateTargets();
-            UpdateUnits();
-            deregisterBuffer.Remove(currentId);
-        }
 
-        Debug.Log($"Rounds simulated: {roundsSimulated}/{roundsPerStage} (ready:{ready})");
-        if (roundsSimulated >= roundsPerStage)
+    public void Simulate()
+    {
+        StartCoroutine(SimulationRoutine());
+    }
+
+    private IEnumerator SimulationRoutine()
+    {
+        while (roundsSimulated < roundsPerStage)
         {
-            ready = true;
+            yield return StartCoroutine(SimulateRound());
         }
+        ready = true;
+    }
+
+    private IEnumerator SimulateRound()
+    {
+        UpdateUnits();
+        UpdateTargets();
+        Queue<System.Guid> outBufferQ = new Queue<System.Guid>();
+        while (actionQueue.Count > 0)
+        {
+            System.Guid currentId = actionQueue.Dequeue();
+            if (!deregisterBuffer.Contains(currentId))
+            {
+                yield return Step(currentId);
+                outBufferQ.Enqueue(currentId);
+            }
+            else
+            {
+                //Debug.Log($"Updating units after finding id in deregisterBuffer");
+                UpdateTargets();
+                UpdateUnits();
+                deregisterBuffer.Remove(currentId);
+            }
+        }
+        actionQueue = outBufferQ;
+        roundsSimulated++;
+
+        //Debug.Log($"Rounds simulated: {roundsSimulated}/{roundsPerStage} (ready:{ready})");
+    }
+
+    private IEnumerator Step(System.Guid id)
+    {
+        IUnit current = units[id];
+        if (!cam.HasShot(id.ToString()))
+        {
+            cam.AddShot(id.ToString(), current.GetTransform(), $"Unit_{current.GetTeam()}");
+        }
+        cam.TransitionTo(id.ToString());
+        yield return new WaitForSeconds(.6f);
+        //Debug.Log("Now in turn: " + current);
+        //Do actions
+        current.Execute();
+        yield return new WaitForSeconds(.3f);
     }
 
     private void OverrideBoxFill2D(Vector3Int start, TileBase tile, int startX, int startY, int endX, int endY)
@@ -302,7 +338,6 @@ public class BoardControllerScript : MonoBehaviour, IBoard
 
     public void EnableSpawnSelection()
     {
-        Debug.Log($"Spawn selection enabled, spawn tiles held: {spawnTiles.Count}");
         ICard c = hand.GetSelectedCard();
         if (selectedSpawns.ContainsKey(c))
         {
@@ -330,7 +365,6 @@ public class BoardControllerScript : MonoBehaviour, IBoard
 
     public void UpdateSpawns()
     {
-        Debug.Log($"Spawn tiles before update: {spawnTiles.Count}");
         spawnTiles.Clear();
         for (int x = tilemap.cellBounds.xMin; x < tilemap.cellBounds.xMax; x++)
         {
@@ -339,13 +373,11 @@ public class BoardControllerScript : MonoBehaviour, IBoard
                 Vector3Int temp = new Vector3Int(x, y, 0);
                 if (tilemap.HasTile(temp) && tilemap.GetTile(temp).name == "SpawnTileAsset")
                 {
-                    Debug.Log($"Getting tile at {temp}");
                     SpawnRim sr = tilemap.GetInstantiatedObject(temp).GetComponentInChildren<SpawnRim>();
                     spawnTiles.Add(sr);
                 }
             }
         }
-        Debug.Log($"Spawn tiles after update: {spawnTiles.Count}");
     }
 
     public void TrySelectSpawnTile(SpawnRim tile)

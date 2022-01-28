@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 
 public interface IBoard: IStage
 {
-    public void Step();
+    public void Simulate();
     public List<IUnit> GetUnitsOnBoard();
     public List<ITarget> GetTargetsOnBoard();
     public Vector3Int GetUnitLocation(System.Guid unitId);
@@ -21,4 +21,5 @@ public interface IBoard: IStage
     public void DisableSpawnSelection();
     public void TrySelectSpawnTile(SpawnRim tile);
     public void UpdateSpawns();
+    public int Round { get; }
 }

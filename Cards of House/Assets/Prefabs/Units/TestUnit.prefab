@@ -119,3 +119,4 @@ MonoBehaviour:
   maxDamage: 40
   minDamage: 26
   allowDiagonalMovement: 0
+  moveTime: 0.3

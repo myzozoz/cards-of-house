@@ -13,6 +13,7 @@ public class BaseUnitController : TargetController, IUnit
     public float maxDamage;
     public float minDamage;
     public bool allowDiagonalMovement;
+    public float moveTime = .5f;
 
 
     new void Start()
@@ -191,7 +192,21 @@ public class BaseUnitController : TargetController, IUnit
     private void MoveTo(Vector3Int target)
     {
         Vector3 targetPos = board.GetTilemap().GetCellCenterWorld(target) + new Vector3(0,heightOffset,0);
-        transform.Translate(targetPos - transform.position);
+
+        StartCoroutine(MoveRoutine(targetPos));
+
+    }
+
+    private IEnumerator MoveRoutine(Vector3 targetPos)
+    {
+        float timeSinceStart = 0f;
+        Vector3 startPos = transform.position;
+        while (timeSinceStart < moveTime)
+        {
+            timeSinceStart += Time.deltaTime;
+            transform.position = Vector3.Lerp(startPos, targetPos, timeSinceStart / moveTime);
+            yield return null;
+        }
     }
 
     public bool CanAct()

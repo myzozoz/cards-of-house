@@ -11,6 +11,8 @@ public class GameController : GenericSingleton<GameController>
     public GameObject testUnit;
     [SerializeField]
     private Text stageText;
+    [SerializeField]
+    private Text roundText;
 
     private IBoard board;
     private ITable table;
@@ -30,9 +32,9 @@ public class GameController : GenericSingleton<GameController>
         cam.AddShot("Hand", board.GetSpawnCenterTransform(), "Spawn_0");
         cam.AddShot("HandExpanded", board.GetSpawnCenterTransform(), "Spawn_1");
         board.SetCam(cam);
-        Debug.Log($"Debug: {GameData.Instance.DefaultCameras}");
+        //Debug.Log($"Debug: {GameData.Instance.DefaultCameras}");
         cam.TransitionTo(GameData.Instance.DefaultCameras[GameData.Instance.CurrentStage]);
-        Debug.Log($"Initial stage: {GameData.Instance.CurrentStage.ToString()}");
+        //Debug.Log($"Initial stage: {GameData.Instance.CurrentStage.ToString()}");
     }
 
     // Update is called once per frame
@@ -46,7 +48,7 @@ public class GameController : GenericSingleton<GameController>
 
         if (GameData.Instance.CurrentStage == Stage.Simulate && Input.GetKeyDown(KeyCode.RightArrow))
         {
-            board.Step();
+            //board.SimulateRound();
         }
 
         if (Input.GetKeyDown(KeyCode.S))
@@ -75,6 +77,7 @@ public class GameController : GenericSingleton<GameController>
         }
 
         stageText.text = $"Stage: {GameData.Instance.CurrentStage.ToString()}";
+        roundText.text = GameData.Instance.CurrentStage == Stage.Simulate ? $"Round: {board.Round}" : "";
     }
 
     void FixedUpdate()
@@ -119,6 +122,7 @@ public class GameController : GenericSingleton<GameController>
             GameData.Instance.CurrentStage = Stage.Simulate;
             board.Initialize();
             cam.TransitionTo(GameData.Instance.DefaultCameras[Stage.Simulate]);
+            board.Simulate();
         }
     }
 
