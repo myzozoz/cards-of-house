@@ -28,11 +28,10 @@ public class SpawnRim : MonoBehaviour, IClickable
     void Start()
     {
         board = GameData.Instance.BoardObject.GetComponent<IBoard>();
-        board.RegisterSpawnTile(this);
 
         mr = gameObject.GetComponent<MeshRenderer>();
         mat = mr.material;
-        mat.SetColor("_Color", readyColor);
+        mr.enabled = false;
         UpdateColor();
     }
 
@@ -40,6 +39,10 @@ public class SpawnRim : MonoBehaviour, IClickable
     void Update()
     {
         
+    }
+
+    void OnDestroy()
+    {
     }
 
     private void UpdateColor()
@@ -73,6 +76,8 @@ public class SpawnRim : MonoBehaviour, IClickable
 
     void OnMouseOver()
     {
+        //Debug.Log("Mouse is hovering over me...");
+        //Debug.Log($"{mat.GetColor("_Color")} should be {hoverColor} but my state is ${state.ToString()}");
         if (state == State.Selectable)
         {
             mat.SetColor("_Color", hoverColor);
@@ -111,5 +116,10 @@ public class SpawnRim : MonoBehaviour, IClickable
             state = value;
             UpdateColor();
         }
+    }
+
+    public SpawnRim Ref
+    {
+        get { return this; }
     }
 }

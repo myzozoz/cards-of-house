@@ -19,6 +19,6 @@ public interface IBoard: IStage
     public Transform GetSpawnCenterTransform();
     public void EnableSpawnSelection();
     public void DisableSpawnSelection();
-    public void RegisterSpawnTile(SpawnRim tile);
     public void TrySelectSpawnTile(SpawnRim tile);
+    public void UpdateSpawns();
 }

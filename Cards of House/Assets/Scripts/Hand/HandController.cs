@@ -54,6 +54,7 @@ public class HandController : MonoBehaviour, IHand
         }
         submitButton.gameObject.SetActive(true);
         submitButton.interactable = false;
+        board.UpdateSpawns();
     }
 
     public void End()

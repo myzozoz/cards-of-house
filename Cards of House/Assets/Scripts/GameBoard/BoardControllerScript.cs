@@ -32,6 +32,8 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     private bool ready;
     [SerializeField]
     private Transform spawnTransform;
+
+    Dictionary<(int,int),TileBase> initialBoardConfig = new Dictionary<(int, int), TileBase>();
     // Start is called before the first frame update
     void Start()
     {
@@ -44,12 +46,26 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         }
         UpdateUnits();
         UpdateTargets();
+        //UpdateSpawns();
         foreach (IUnit unit in units.Values)
         {
             actionQueue.Enqueue(unit.GetId());
         }
         ready = true;
         roundsSimulated = 0;
+
+        initialBoardConfig.Clear();
+        for (int y = tilemap.cellBounds.yMin; y < tilemap.cellBounds.yMax; y++)
+        {
+            for (int x = tilemap.cellBounds.xMin; x < tilemap.cellBounds.xMax; x++)
+            {
+                Vector3Int temp = new Vector3Int(x, y, 0);
+                if (tilemap.HasTile(temp))
+                {
+                    initialBoardConfig.Add((x, y), tilemap.GetTile(temp));
+                }
+            }
+        }
     }
 
     public bool Ready()
@@ -247,9 +263,9 @@ public class BoardControllerScript : MonoBehaviour, IBoard
             for (int y = tilemap.cellBounds.yMin; y < tilemap.cellBounds.yMax; y++)
             {
                 Vector3Int temp = new Vector3Int(x, y, 0);
-                if (tilemap.HasTile(temp) && tilemap.GetTile(temp).name == "Path")
+                if (tilemap.HasTile(temp) && initialBoardConfig.ContainsKey((x, y)))
                 {
-                    tilemap.SetTile(temp, defaultTile);
+                    tilemap.SetTile(temp, initialBoardConfig[(x,y)]);
                 }
             }
         }
@@ -286,6 +302,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
 
     public void EnableSpawnSelection()
     {
+        Debug.Log($"Spawn selection enabled, spawn tiles held: {spawnTiles.Count}");
         ICard c = hand.GetSelectedCard();
         if (selectedSpawns.ContainsKey(c))
         {
@@ -311,9 +328,24 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         }
     }
 
-    public void RegisterSpawnTile(SpawnRim tile)
+    public void UpdateSpawns()
     {
-        spawnTiles.Add(tile);
+        Debug.Log($"Spawn tiles before update: {spawnTiles.Count}");
+        spawnTiles.Clear();
+        for (int x = tilemap.cellBounds.xMin; x < tilemap.cellBounds.xMax; x++)
+        {
+            for (int y = tilemap.cellBounds.yMin; y < tilemap.cellBounds.yMax; y++)
+            {
+                Vector3Int temp = new Vector3Int(x, y, 0);
+                if (tilemap.HasTile(temp) && tilemap.GetTile(temp).name == "SpawnTileAsset")
+                {
+                    Debug.Log($"Getting tile at {temp}");
+                    SpawnRim sr = tilemap.GetInstantiatedObject(temp).GetComponentInChildren<SpawnRim>();
+                    spawnTiles.Add(sr);
+                }
+            }
+        }
+        Debug.Log($"Spawn tiles after update: {spawnTiles.Count}");
     }
 
     public void TrySelectSpawnTile(SpawnRim tile)
