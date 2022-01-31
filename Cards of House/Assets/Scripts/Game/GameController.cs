@@ -13,11 +13,14 @@ public class GameController : GenericSingleton<GameController>
     private Text stageText;
     [SerializeField]
     private Text roundText;
+    [SerializeField]
+    private float simulationSpeed = 1f;
 
     private IBoard board;
     private ITable table;
     private IHand hand;
     private ICameraController cam;
+
 
     // Start is called before the first frame update
     void Start()
@@ -78,6 +81,21 @@ public class GameController : GenericSingleton<GameController>
 
         stageText.text = $"Stage: {GameData.Instance.CurrentStage.ToString()}";
         roundText.text = GameData.Instance.CurrentStage == Stage.Simulate ? $"Round: {board.Round}" : "";
+
+        if (GameData.Instance.WState == WinState.Won)
+        {
+            StopAllCoroutines();
+            board.End();
+            StartCoroutine(WinRoutine());
+            GameData.Instance.WState = WinState.End;
+        }
+        else if (GameData.Instance.WState == WinState.Lost)
+        {
+            StopAllCoroutines();
+            board.End();
+            StartCoroutine(LoseRoutine());
+            GameData.Instance.WState = WinState.End;
+        }
     }
 
     void FixedUpdate()
@@ -135,5 +153,24 @@ public class GameController : GenericSingleton<GameController>
             table.Initialize();
             cam.TransitionTo(GameData.Instance.DefaultCameras[Stage.Pick]);
         }
+    }
+
+    void OnValidate()
+    {
+        Time.timeScale = simulationSpeed;
+    }
+    
+    private IEnumerator WinRoutine()
+    {
+        Debug.Log("We win! :party:");
+        yield return new WaitForSeconds(2f);
+        Stop();
+    }
+
+    private IEnumerator LoseRoutine()
+    {
+        Debug.Log("We lost! :(");
+        yield return new WaitForSeconds(2f);
+        Stop();
     }
 }

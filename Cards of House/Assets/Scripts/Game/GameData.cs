@@ -16,6 +16,8 @@ public class GameData : GenericSingleton<GameData>
     [SerializeField]
     private Stage stage;
 
+    private WinState winState = WinState.Undecided;
+
     private List<ICard> handCards;
     private Dictionary<Stage, string> defaultCameras = new Dictionary<Stage, string>()
         {
@@ -80,5 +82,11 @@ public class GameData : GenericSingleton<GameData>
     public GameObject HandObject
     {
         get { return handObject; }
+    }
+
+    public WinState WState
+    {
+        get { return winState; }
+        set { winState = value; }
     }
 }

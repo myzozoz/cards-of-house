@@ -21,7 +21,7 @@ public class TargetController : MonoBehaviour, ITarget
     // Start is called before the first frame update
     protected void Start()
     {
-        board = transform.parent.GetComponent<IBoard>();
+        board = GameData.Instance.BoardObject.GetComponent<IBoard>();
         grid = board.GetGrid();
     }
 
@@ -46,6 +46,11 @@ public class TargetController : MonoBehaviour, ITarget
 
     public Vector3Int GetLocation()
     {
+        if (board == null)
+        {
+            board = GameData.Instance.BoardObject.GetComponent<IBoard>();
+        }
+
         if (grid == null)
         {
             grid = board.GetGrid();
@@ -69,6 +74,7 @@ public class TargetController : MonoBehaviour, ITarget
     public void Die()
     {
         //Death animations and such
+        board.RegisterAvatarDeath(this as AvatarUnit);
         Debug.Log("Dying...");
         alive = false;
         board.Deregister(id);

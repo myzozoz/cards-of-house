@@ -151,7 +151,6 @@ public class HandController : MonoBehaviour, IHand
 
     public void SubmitSpawns()
     {
-        Debug.Log($"Submitting spawn cards {cards.Count}");
         ready = true;
     }
 }

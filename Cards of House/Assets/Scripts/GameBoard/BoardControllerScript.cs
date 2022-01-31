@@ -33,6 +33,10 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     [SerializeField]
     private Transform spawnTransform;
 
+    private HashSet<AvatarUnit> playerAvatars = new HashSet<AvatarUnit>();
+    private HashSet<AvatarUnit> enemyAvatars = new HashSet<AvatarUnit>();
+
+
     Dictionary<(int,int),TileBase> initialBoardConfig = new Dictionary<(int, int), TileBase>();
     // Start is called before the first frame update
     void Start()
@@ -40,6 +44,10 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         grid = transform.GetComponent<Grid>();
         tilemap = transform.GetComponentInChildren<Tilemap>();
         hand = GameData.Instance.HandObject.GetComponent<IHand>();
+
+        _InitAvatars();
+        Debug.Log($"Player/enemy avatars: {playerAvatars.Count} / {enemyAvatars.Count}");
+
         if (tilemap == null)
         {
             Debug.Log("No Tilemap found, please check that one such exists");
@@ -97,6 +105,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     public void End()
     {
         // clean up
+        StopAllCoroutines();
     }
 
     public int Round
@@ -117,7 +126,6 @@ public class BoardControllerScript : MonoBehaviour, IBoard
                 Debug.Log($"{id}");
             }
         }
-
     }
 
 
@@ -175,6 +183,21 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         //Do actions
         current.Execute();
         yield return new WaitForSeconds(.3f);
+
+        
+        CheckWinLose();
+    }
+
+    private void CheckWinLose()
+    {
+        if (playerAvatars.Count <= 0)
+        {
+            GameData.Instance.WState = WinState.Lost;
+        }
+        else if (enemyAvatars.Count <= 0)
+        {
+            GameData.Instance.WState = WinState.Won;
+        }
     }
 
     private void OverrideBoxFill2D(Vector3Int start, TileBase tile, int startX, int startY, int endX, int endY)
@@ -389,5 +412,38 @@ public class BoardControllerScript : MonoBehaviour, IBoard
             hand.LockSelectedCard();
             tile.SpawnState = SpawnRim.State.Locked;
         }
+    }
+
+    private void _InitAvatars()
+    {
+        playerAvatars.Clear();
+        enemyAvatars.Clear();
+
+        List<GameObject> pas = new List<GameObject>(GameObject.FindGameObjectsWithTag("PlayerAvatar"));
+        List<GameObject> eas = new List<GameObject>(GameObject.FindGameObjectsWithTag("EnemyAvatar"));
+
+        foreach (GameObject go in pas)
+        {
+            playerAvatars.Add(go.GetComponent<AvatarUnit>());
+        }
+
+        foreach (GameObject go in eas)
+        {
+            enemyAvatars.Add(go.GetComponent<AvatarUnit>());
+        }
+    }
+
+    public void RegisterAvatarDeath(AvatarUnit au)
+    {
+        Debug.Log($"Trying to register avatar death, counts: {playerAvatars.Count} / {enemyAvatars.Count}");
+
+        if (playerAvatars.Contains(au))
+        {
+            playerAvatars.Remove(au);
+        } else if (enemyAvatars.Contains(au))
+        {
+            enemyAvatars.Remove(au);
+        }
+        Debug.Log($"Trying to register avatar death, counts: {playerAvatars.Count} / {enemyAvatars.Count}");
     }
 }

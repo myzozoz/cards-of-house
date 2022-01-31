@@ -22,4 +22,5 @@ public interface IBoard: IStage
     public void TrySelectSpawnTile(SpawnRim tile);
     public void UpdateSpawns();
     public int Round { get; }
+    public void RegisterAvatarDeath(AvatarUnit au);
 }

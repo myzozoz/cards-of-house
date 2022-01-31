@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerUnit : TargetController, ITarget
+public class AvatarUnit : TargetController, ITarget
 {
-    
+
 }
