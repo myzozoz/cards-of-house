@@ -11,6 +11,10 @@ PrefabInstance:
       propertyPath: team
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -3544554754219368000, guid: 0ec879f7e691abe4389b56bcb8422096, type: 3}
+      propertyPath: maxHealth
+      value: 1000
+      objectReference: {fileID: 0}
     - target: {fileID: 2180351948501696986, guid: 0ec879f7e691abe4389b56bcb8422096, type: 3}
       propertyPath: m_Name
       value: EnemyAvatar

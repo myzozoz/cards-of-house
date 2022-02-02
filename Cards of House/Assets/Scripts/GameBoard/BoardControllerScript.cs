@@ -19,8 +19,8 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     private Queue<System.Guid> actionQueue = new Queue<System.Guid>();
     private HashSet<System.Guid> deregisterBuffer = new HashSet<System.Guid>();
     private HashSet<SpawnRim> spawnTiles = new HashSet<SpawnRim>();
+    private List<Vector3Int> enemySpawns = new List<Vector3Int>();
     private Dictionary<ICard, SpawnRim> selectedSpawns = new Dictionary<ICard, SpawnRim>();
-
 
     private ICameraController cam;
     private IHand hand;
@@ -28,10 +28,16 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     private Vector3 unitCamOffset = new Vector3(0f, 8.5f, -6f);
     [SerializeField]
     private short roundsPerStage = 12;
+    [SerializeField]
+    private short spawnEnemiesAfterRounds = 5;
+    [SerializeField]
+    private short enemySpawnCount = 3;
     private short roundsSimulated;
     private bool ready;
     [SerializeField]
     private Transform spawnTransform;
+    [SerializeField]
+    private GameObject enemyUnit;
 
     private HashSet<AvatarUnit> playerAvatars = new HashSet<AvatarUnit>();
     private HashSet<AvatarUnit> enemyAvatars = new HashSet<AvatarUnit>();
@@ -46,6 +52,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         hand = GameData.Instance.HandObject.GetComponent<IHand>();
 
         _InitAvatars();
+        _InitEnemySpawns();
         Debug.Log($"Player/enemy avatars: {playerAvatars.Count} / {enemyAvatars.Count}");
 
         if (tilemap == null)
@@ -54,7 +61,6 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         }
         UpdateUnits();
         UpdateTargets();
-        //UpdateSpawns();
         foreach (IUnit unit in units.Values)
         {
             actionQueue.Enqueue(unit.GetId());
@@ -147,6 +153,12 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     {
         UpdateUnits();
         UpdateTargets();
+
+        if (roundsSimulated % spawnEnemiesAfterRounds == 0)
+        {
+            SpawnEnemies();
+        }
+
         Queue<System.Guid> outBufferQ = new Queue<System.Guid>();
         while (actionQueue.Count > 0)
         {
@@ -435,8 +447,6 @@ public class BoardControllerScript : MonoBehaviour, IBoard
 
     public void RegisterAvatarDeath(AvatarUnit au)
     {
-        Debug.Log($"Trying to register avatar death, counts: {playerAvatars.Count} / {enemyAvatars.Count}");
-
         if (playerAvatars.Contains(au))
         {
             playerAvatars.Remove(au);
@@ -444,6 +454,51 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         {
             enemyAvatars.Remove(au);
         }
-        Debug.Log($"Trying to register avatar death, counts: {playerAvatars.Count} / {enemyAvatars.Count}");
+    }
+
+    private void _InitEnemySpawns()
+    {
+        enemySpawns.Clear();
+        for (int x = tilemap.cellBounds.xMin; x < tilemap.cellBounds.xMax; x++)
+        {
+            for (int y = tilemap.cellBounds.yMin; y < tilemap.cellBounds.yMax; y++)
+            {
+                Vector3Int temp = new Vector3Int(x, y, 0);
+                if (tilemap.HasTile(temp) && tilemap.GetTile(temp).name == "SpawnEnemy")
+                {
+                    enemySpawns.Add(temp);
+                }
+            }
+        }
+    }
+
+    private void SpawnEnemies()
+    {
+        //Randomize spawn locations
+        //Spawn enemies
+        List<Vector3Int> availableSpawns = new List<Vector3Int>();
+
+        foreach (Vector3Int v in enemySpawns)
+        {
+            if (IsFree(v))
+            {
+                availableSpawns.Add(v);
+            }
+        }
+
+        Debug.Log($"Available spawn tiles: {availableSpawns.Count}/{enemySpawns.Count}");
+
+        HashSet<int> indexes = new HashSet<int>();
+        while (indexes.Count < enemySpawnCount && indexes.Count < availableSpawns.Count)
+        {
+            indexes.Add(Random.Range(0, enemySpawns.Count));
+        }
+
+        foreach (int i in indexes)
+        {
+            SpawnUnit(enemyUnit, enemySpawns[i]);
+        }
+        UpdateUnits();
+        UpdateTargets();
     }
 }

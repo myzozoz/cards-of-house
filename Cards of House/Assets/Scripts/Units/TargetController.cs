@@ -6,8 +6,11 @@ public class TargetController : MonoBehaviour, ITarget
 {
     public TargetType targetType;
     public int team;
-    public float health = 100f;
-
+    public float maxHealth = 100f;
+    
+    
+    protected float health;
+    protected HealthBar hb;
     protected IBoard board;
     protected System.Guid id;
     protected Grid grid;
@@ -21,13 +24,18 @@ public class TargetController : MonoBehaviour, ITarget
     // Start is called before the first frame update
     protected void Start()
     {
+        health = maxHealth;
         board = GameData.Instance.BoardObject.GetComponent<IBoard>();
         grid = board.GetGrid();
+
+        hb = GetComponentInChildren<HealthBar>();
+        hb.SetVisible(false);
     }
 
 
     void FixedUpdate()
     {
+        hb.Fill = health / maxHealth;
         if (health <= 0f)
         {
             Die();
@@ -69,6 +77,10 @@ public class TargetController : MonoBehaviour, ITarget
         //Debug.Log($"{transform.name} taking {val} damage");
         health -= val;
         health = health > 0f ? health : 0f;
+        if (!hb.IsVisible())
+            hb.SetVisible(true);
+        
+        
     }
 
     public void Die()
