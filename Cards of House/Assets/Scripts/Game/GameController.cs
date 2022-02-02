@@ -140,7 +140,6 @@ public class GameController : GenericSingleton<GameController>
             GameData.Instance.CurrentStage = Stage.Simulate;
             board.Initialize();
             cam.TransitionTo(GameData.Instance.DefaultCameras[Stage.Simulate]);
-            board.Simulate();
         }
     }
 

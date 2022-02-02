@@ -16,16 +16,14 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     private Tilemap tilemap;
     private Dictionary<System.Guid, IUnit> units = new Dictionary<System.Guid, IUnit>();
     private Dictionary<System.Guid, ITarget> targets = new Dictionary<System.Guid, ITarget>();
-    private Queue<System.Guid> actionQueue = new Queue<System.Guid>();
     private HashSet<System.Guid> deregisterBuffer = new HashSet<System.Guid>();
     private HashSet<SpawnRim> spawnTiles = new HashSet<SpawnRim>();
     private List<Vector3Int> enemySpawns = new List<Vector3Int>();
     private Dictionary<ICard, SpawnRim> selectedSpawns = new Dictionary<ICard, SpawnRim>();
+    private HashSet<Vector3Int> reservedTiles = new HashSet<Vector3Int>();
 
     private ICameraController cam;
     private IHand hand;
-    private Vector3 unitCamRotation = new Vector3(50f, 0f, 0f);
-    private Vector3 unitCamOffset = new Vector3(0f, 8.5f, -6f);
     [SerializeField]
     private short roundsPerStage = 12;
     [SerializeField]
@@ -41,19 +39,21 @@ public class BoardControllerScript : MonoBehaviour, IBoard
 
     private HashSet<AvatarUnit> playerAvatars = new HashSet<AvatarUnit>();
     private HashSet<AvatarUnit> enemyAvatars = new HashSet<AvatarUnit>();
+    private AIController ai;
 
 
     Dictionary<(int,int),TileBase> initialBoardConfig = new Dictionary<(int, int), TileBase>();
+
     // Start is called before the first frame update
     void Start()
     {
         grid = transform.GetComponent<Grid>();
         tilemap = transform.GetComponentInChildren<Tilemap>();
         hand = GameData.Instance.HandObject.GetComponent<IHand>();
+        ai = GameData.Instance.AI;
 
         _InitAvatars();
         _InitEnemySpawns();
-        Debug.Log($"Player/enemy avatars: {playerAvatars.Count} / {enemyAvatars.Count}");
 
         if (tilemap == null)
         {
@@ -61,11 +61,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         }
         UpdateUnits();
         UpdateTargets();
-        foreach (IUnit unit in units.Values)
-        {
-            actionQueue.Enqueue(unit.GetId());
-        }
-        ready = true;
+        ready = false;
         roundsSimulated = 0;
 
         initialBoardConfig.Clear();
@@ -119,85 +115,48 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         get { return roundsSimulated+1; }
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Simulate(Command command)
     {
-        if (Input.GetKeyDown(KeyCode.UpArrow))
+        if (GameData.Instance.CurrentStage != Stage.Simulate)
         {
-            //AddRandomForbiddenTiles(forbiddenTiles);
-            Debug.Log($"Units in queue {actionQueue.Count}");
-            Debug.Log($"Ids in deregister buffer {deregisterBuffer.Count}");
-            foreach (System.Guid id in deregisterBuffer)
-            {
-                Debug.Log($"{id}");
-            }
+            Debug.Log("Not simulation time yet");
+            return;
         }
-    }
 
-
-    public void Simulate()
-    {
-        StartCoroutine(SimulationRoutine());
-    }
-
-    private IEnumerator SimulationRoutine()
-    {
-        while (roundsSimulated < roundsPerStage)
-        {
-            yield return StartCoroutine(SimulateRound());
-        }
-        ready = true;
-    }
-
-    private IEnumerator SimulateRound()
-    {
-        UpdateUnits();
-        UpdateTargets();
-
+        SubmitCommand(0, command);
         if (roundsSimulated % spawnEnemiesAfterRounds == 0)
         {
             SpawnEnemies();
         }
-
-        Queue<System.Guid> outBufferQ = new Queue<System.Guid>();
-        while (actionQueue.Count > 0)
-        {
-            System.Guid currentId = actionQueue.Dequeue();
-            if (!deregisterBuffer.Contains(currentId))
-            {
-                yield return Step(currentId);
-                outBufferQ.Enqueue(currentId);
-            }
-            else
-            {
-                //Debug.Log($"Updating units after finding id in deregisterBuffer");
-                UpdateTargets();
-                UpdateUnits();
-                deregisterBuffer.Remove(currentId);
-            }
-        }
-        actionQueue = outBufferQ;
+        SubmitTarget(1, ai.GetTarget());
+        SubmitCommand(1, ai.GetCommand());
         roundsSimulated++;
-
-        //Debug.Log($"Rounds simulated: {roundsSimulated}/{roundsPerStage} (ready:{ready})");
+        if (roundsSimulated >= roundsPerStage)
+        {
+            ready = true;
+        }
     }
 
-    private IEnumerator Step(System.Guid id)
+    public void SubmitCommand(int team, Command command)
     {
-        IUnit current = units[id];
-        if (!cam.HasShot(id.ToString()))
+        // if we are currently in a state where we can do this action
+        if (GameData.Instance.CurrentStage != Stage.Simulate)
         {
-            cam.AddShot(id.ToString(), current.GetTransform(), $"Unit_{current.GetTeam()}");
+            return;
         }
-        cam.TransitionTo(id.ToString());
-        yield return new WaitForSeconds(.6f);
-        //Debug.Log("Now in turn: " + current);
-        //Do actions
-        current.Execute();
-        yield return new WaitForSeconds(.3f);
 
-        
-        CheckWinLose();
+        foreach (IUnit u in GetUnitsOnBoard(team))
+        {
+            u.Execute(command);
+        }
+    }
+
+    public void SubmitTarget(int team, TargetType targetType)
+    {
+        foreach (IUnit u in GetUnitsOnBoard(team))
+        {
+            u.TargetMode = targetType;
+        }
     }
 
     private void CheckWinLose()
@@ -284,9 +243,37 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         return new List<IUnit>(units.Values);
     }
 
+    public List<IUnit> GetUnitsOnBoard(int team)
+    {
+        List<IUnit> uList = new List<IUnit>(units.Values);
+        List<IUnit> teamList = new List<IUnit>();
+        foreach (IUnit u in uList)
+        {
+            if (u.Team == team)
+            {
+                teamList.Add(u);
+            }
+        }
+        return teamList;
+    }
+
     public List<ITarget> GetTargetsOnBoard()
     {
         return new List<ITarget>(targets.Values);
+    }
+
+    public List<ITarget> GetTargetsOnBoard(int team)
+    {
+        List<ITarget> tList = new List<ITarget>(units.Values);
+        List<ITarget> teamList = new List<ITarget>();
+        foreach (ITarget t in tList)
+        {
+            if (t.Team == team)
+            {
+                teamList.Add(t);
+            }
+        }
+        return teamList;
     }
 
     public Vector3Int GetUnitLocation(System.Guid unitId)
@@ -296,7 +283,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
 
     public Grid GetGrid()
     {
-        return grid;
+        return GetComponent<Grid>();
     }
 
     public Tilemap GetTilemap()
@@ -316,12 +303,9 @@ public class BoardControllerScript : MonoBehaviour, IBoard
             return false;
         }
 
-        foreach (ITarget t in targets.Values)
+        if (reservedTiles.Contains(loc))
         {
-            if (t.GetLocation() == loc)
-            {
-                return false;
-            }
+            return false;
         }
 
         return true;
@@ -353,10 +337,6 @@ public class BoardControllerScript : MonoBehaviour, IBoard
     {
         GameObject go = Instantiate(unit, tilemap.GetCellCenterWorld(spawnLocation), Quaternion.Euler(0,0,0), this.transform);
         IUnit unitController = go.GetComponent<IUnit>();
-        if (unitController != null)
-        {
-            actionQueue.Enqueue(unitController.GetId());
-        }
         UpdateUnits();
         UpdateTargets();
     }
@@ -486,7 +466,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
             }
         }
 
-        Debug.Log($"Available spawn tiles: {availableSpawns.Count}/{enemySpawns.Count}");
+        //Debug.Log($"Available spawn tiles: {availableSpawns.Count}/{enemySpawns.Count}");
 
         HashSet<int> indexes = new HashSet<int>();
         while (indexes.Count < enemySpawnCount && indexes.Count < availableSpawns.Count)
@@ -500,5 +480,26 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         }
         UpdateUnits();
         UpdateTargets();
+    }
+
+    public bool ReserveTile(Vector3Int t)
+    {
+        if (!reservedTiles.Contains(t))
+        {
+            reservedTiles.Add(t);
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool ReleaseTile(Vector3Int t)
+    {
+        if (reservedTiles.Contains(t))
+        {
+            reservedTiles.Remove(t);
+            return true;
+        }
+        return false;
     }
 }

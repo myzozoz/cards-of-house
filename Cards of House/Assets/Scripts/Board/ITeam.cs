@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface ITeam
 {
-    public int GetTeam();
+    public int Team { get; }
 }

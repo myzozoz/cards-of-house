@@ -30,6 +30,8 @@ public class TargetController : MonoBehaviour, ITarget
 
         hb = GetComponentInChildren<HealthBar>();
         hb.SetVisible(false);
+
+        board.ReserveTile(GetLocation());
     }
 
 
@@ -47,9 +49,9 @@ public class TargetController : MonoBehaviour, ITarget
         return targetType;
     }
 
-    public int GetTeam()
+    public int Team
     {
-        return team;
+        get { return team; }
     }
 
     public Vector3Int GetLocation()
@@ -89,6 +91,7 @@ public class TargetController : MonoBehaviour, ITarget
         board.RegisterAvatarDeath(this as AvatarUnit);
         Debug.Log("Dying...");
         alive = false;
+        board.ReleaseTile(GetLocation());
         board.Deregister(id);
         Destroy(gameObject);
     }

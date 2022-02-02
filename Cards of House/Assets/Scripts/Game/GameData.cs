@@ -84,6 +84,11 @@ public class GameData : GenericSingleton<GameData>
         get { return handObject; }
     }
 
+    public AIController AI
+    {
+        get { return GetComponent<AIController>(); }
+    }
+
     public WinState WState
     {
         get { return winState; }

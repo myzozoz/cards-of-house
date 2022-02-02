@@ -1,6 +1,6 @@
 public enum TargetType
 {
-    Player,
+    Avatar,
     Unit,
     PowerUp
 }

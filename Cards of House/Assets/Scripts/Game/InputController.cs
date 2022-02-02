@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class InputController : MonoBehaviour
 {
+    private IBoard board;
     // Start is called before the first frame update
     void Start()
     {
-        
+        board = GameData.Instance.BoardObject.GetComponent<IBoard>();
     }
 
     // Update is called once per frame
@@ -29,6 +30,38 @@ public class InputController : MonoBehaviour
                     c.HandleClick();
                 }
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            //Set target to Avatar
+            Debug.Log("NO IMPLEMENTATION YET: Set target to Avatar");
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            //Set target to Unit
+            Debug.Log("NO IMPLEMENTATION YET: Set target to Unit");
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            //Set target to Powerup
+            Debug.Log("NO IMPLEMENTATION YET: Set target to Powerup");
+        }
+
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            //Perform action Move
+            board.Simulate(Command.Move);
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            //Perform action Move
+            board.Simulate(Command.Wait);
+        }
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            //Perform action Move
+            board.Simulate(Command.Attack);
         }
     }
 }

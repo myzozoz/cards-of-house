@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IPlayer : ITeam
 {
-    public string GetName();
+    public string Name { get; }
 }

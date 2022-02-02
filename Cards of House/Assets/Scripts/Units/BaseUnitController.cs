@@ -14,6 +14,7 @@ public class BaseUnitController : TargetController, IUnit
     public float minDamage;
     public bool allowDiagonalMovement;
     public float moveTime = .5f;
+    private TargetType targetMode = TargetType.Unit;
 
 
     new void Start()
@@ -22,12 +23,17 @@ public class BaseUnitController : TargetController, IUnit
         transform.position = new Vector3(transform.position.x,heightOffset, transform.position.z);
     }
 
-    public void Execute()
+    public void Execute(Command command)
     {
         
         if (!canAct)
         {
             return;
+        }
+
+        if (board == null)
+        {
+            board = GameData.Instance.BoardObject.GetComponent<IBoard>();
         }
         Tilemap tm = board.GetTilemap();
 
@@ -84,7 +90,7 @@ public class BaseUnitController : TargetController, IUnit
             {
                 Debug.Log("No player controller found :(");
             }
-            if (pc.GetTeam() != team)
+            if (pc.Team != team)
             {
                 return pc;
             }
@@ -98,7 +104,7 @@ public class BaseUnitController : TargetController, IUnit
         //Debug.Log($"Choosing target from {targets.Count} options");
         //Remove friendlies from list
         foreach (ITarget target in targets) {
-            if (target != null && target.GetTeam() != team)
+            if (target != null && target.Team != team)
             {
                 filteredList.Add(target);
             }
@@ -108,8 +114,8 @@ public class BaseUnitController : TargetController, IUnit
         //Prioritize units over players
         List<ITarget> filteredByTargetType = FilterByTargetType(filteredList, new List<TargetType>() {
             TargetType.Unit,
-            TargetType.Player,
             TargetType.PowerUp,
+            TargetType.Avatar,
         });
         //Debug.Log($"After filtering by target type: {filteredByTargetType.Count}");
 
@@ -191,6 +197,8 @@ public class BaseUnitController : TargetController, IUnit
 
     private void MoveTo(Vector3Int target)
     {
+        board.ReserveTile(target);
+        board.ReleaseTile(GetLocation());
         Vector3 targetPos = board.GetTilemap().GetCellCenterWorld(target) + new Vector3(0,heightOffset,0);
 
         StartCoroutine(MoveRoutine(targetPos));
@@ -240,5 +248,10 @@ public class BaseUnitController : TargetController, IUnit
     public Transform GetTransform()
     {
         return transform;
+    }
+
+    public TargetType TargetMode { 
+        get { return targetMode; }
+        set { targetMode = value; }
     }
 }

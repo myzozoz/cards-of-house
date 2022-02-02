@@ -2,10 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour, IPlayer
+public class AIController : MonoBehaviour, IPlayer
 {
-    public string playerName;
-    public int team;
+    [SerializeField]
+    private string aiName = "House";
+    private int team = 1;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -20,7 +22,7 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     public string Name
     {
-        get { return playerName; }
+        get { return aiName; }
     }
 
     public int Team
@@ -28,14 +30,13 @@ public class PlayerController : MonoBehaviour, IPlayer
         get { return team; }
     }
 
-    public Vector3Int GetLocation()
+    public TargetType GetTarget()
     {
-        return new Vector3Int(0, 0, 0);
+        return TargetType.Avatar;
     }
 
-    public void TakeDamage(float val)
+    public Command GetCommand()
     {
-        Debug.Log($"{transform.name} taking {val} damage");
+        return Command.Move;
     }
-
 }
