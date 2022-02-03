@@ -131,6 +131,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         SubmitTarget(1, ai.GetTarget());
         SubmitCommand(1, ai.GetCommand());
         roundsSimulated++;
+        CheckWinLose();
         if (roundsSimulated >= roundsPerStage)
         {
             ready = true;
@@ -434,6 +435,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         {
             enemyAvatars.Remove(au);
         }
+        CheckWinLose();
     }
 
     private void _InitEnemySpawns()

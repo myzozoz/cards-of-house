@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Card : MonoBehaviour, ICard, IClickable
+public class Card : MonoBehaviour, ICard
 {
     [SerializeField]
     private Color offlineColor;
@@ -25,6 +25,7 @@ public class Card : MonoBehaviour, ICard, IClickable
     private ITable table;
     private IHand hand;
     private State state;
+    private int tableIndex;
 
     public enum State {
         Offline,
@@ -162,5 +163,11 @@ public class Card : MonoBehaviour, ICard, IClickable
     public GameObject GetSpawnableUnit()
     {
         return SpawnedUnit;
+    }
+
+    public int TIndex
+    {
+        get { return tableIndex; }
+        set { tableIndex = value; }
     }
 }

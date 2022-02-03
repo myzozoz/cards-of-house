@@ -15,12 +15,14 @@ public class BaseUnitController : TargetController, IUnit
     public bool allowDiagonalMovement;
     public float moveTime = .5f;
     private TargetType targetMode = TargetType.Unit;
+    private Vector3Int occupiedTile;
 
 
     new void Start()
     {
         base.Start();
         transform.position = new Vector3(transform.position.x,heightOffset, transform.position.z);
+        occupiedTile = GetLocation();
     }
 
     public void Execute(Command command)
@@ -198,7 +200,8 @@ public class BaseUnitController : TargetController, IUnit
     private void MoveTo(Vector3Int target)
     {
         board.ReserveTile(target);
-        board.ReleaseTile(GetLocation());
+        board.ReleaseTile(occupiedTile);
+        occupiedTile = target;
         Vector3 targetPos = board.GetTilemap().GetCellCenterWorld(target) + new Vector3(0,heightOffset,0);
 
         StartCoroutine(MoveRoutine(targetPos));

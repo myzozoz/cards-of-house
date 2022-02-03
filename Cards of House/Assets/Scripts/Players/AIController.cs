@@ -8,10 +8,12 @@ public class AIController : MonoBehaviour, IPlayer
     private string aiName = "House";
     private int team = 1;
 
+    private IBoard board;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        board = GameData.Instance.BoardObject.GetComponent<IBoard>();
     }
 
     // Update is called once per frame
@@ -32,6 +34,8 @@ public class AIController : MonoBehaviour, IPlayer
 
     public TargetType GetTarget()
     {
+        if (board.GetUnitsOnBoard(0).Count > 0)
+            return TargetType.Unit;
         return TargetType.Avatar;
     }
 

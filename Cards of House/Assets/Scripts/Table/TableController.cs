@@ -17,6 +17,8 @@ public class TableController : MonoBehaviour, ITable
     private bool canSubmit;
     private bool ready;
 
+    //This list also determines the index of cards on the table, i.e. the top left card
+    //(first coordinates on the list) is index 0 and mid right card is index 4 and so on
     private static List<Vector3> cardPositions = new List<Vector3>() {
         new Vector3(-1.58f,0f,2.318f),
         new Vector3(1.58f,0f,2.318f),
@@ -90,6 +92,12 @@ public class TableController : MonoBehaviour, ITable
 
     public void SubmitCards()
     {
+        if (!canSubmit)
+        {
+            Debug.Log("Can not submit yet");
+            return;
+        }
+
         List<ICard> hand = new List<ICard>();
         foreach (System.Guid id in selectedCards)
         {
@@ -115,14 +123,27 @@ public class TableController : MonoBehaviour, ITable
         }
         cards.Clear();
 
-        foreach (Vector3 v in cardPositions)
+        for (int i = 0; i < cardPositions.Count; i++)
         {
             GameObject go = Instantiate(cardObject, this.transform, false);
-            go.transform.Translate(v);
+            go.transform.Translate(cardPositions[i]);
             ICard c = go.GetComponent<ICard>();
             cards.Add(c.GetId(), c);
             c.CardState = Card.State.Selectable;
+            c.TIndex = i;
             //Debug.Log($"Card {c.GetId()} state: {c.CardState.ToString()}");
+        }
+    }
+
+    public void SendInputToCard(int index)
+    {
+        foreach (ICard c in cards.Values)
+        {
+            if (c.TIndex == index)
+            {
+                c.HandleClick();
+                return;
+            }
         }
     }
 }

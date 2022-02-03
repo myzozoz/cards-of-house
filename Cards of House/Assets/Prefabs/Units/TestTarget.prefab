@@ -112,15 +112,14 @@ MonoBehaviour:
   targetType: 1
   team: 1
   maxHealth: 60
-  health: 40
   canAct: 1
-  primaryReach: 1
-  secondaryReach: 0
+  primaryReach: 2
+  secondaryReach: 1
   heightOffset: 0.5
   pathTile: {fileID: 11400000, guid: 47a23cba6ed343d4c9e365f190b8e745, type: 2}
   maxDamage: 30
   minDamage: 20
-  allowDiagonalMovement: 0
+  allowDiagonalMovement: 1
   moveTime: 0.5
 --- !u!1001 &1456691654049613399
 PrefabInstance:
