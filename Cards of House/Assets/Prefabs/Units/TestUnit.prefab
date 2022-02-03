@@ -111,7 +111,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetType: 1
   team: 0
-  maxHealth: 10
+  maxHealth: 100
   canAct: 1
   primaryReach: 1
   secondaryReach: 1

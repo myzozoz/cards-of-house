@@ -199,13 +199,15 @@ public class BaseUnitController : TargetController, IUnit
 
     private void MoveTo(Vector3Int target)
     {
-        board.ReserveTile(target);
-        board.ReleaseTile(occupiedTile);
-        occupiedTile = target;
-        Vector3 targetPos = board.GetTilemap().GetCellCenterWorld(target) + new Vector3(0,heightOffset,0);
+        if (board.IsFree(target))
+        {
+            board.ReserveTile(target);
+            board.ReleaseTile(occupiedTile);
+            occupiedTile = target;
+            Vector3 targetPos = board.GetTilemap().GetCellCenterWorld(target) + new Vector3(0, heightOffset, 0);
 
-        StartCoroutine(MoveRoutine(targetPos));
-
+            StartCoroutine(MoveRoutine(targetPos));
+        }
     }
 
     private IEnumerator MoveRoutine(Vector3 targetPos)

@@ -5,6 +5,7 @@ using UnityEngine.Tilemaps;
 
 public static class Navigator
 {
+    public static int occupationWeight = 1;
     public static Vector3Int ControlVector { get; } = new Vector3Int(-666, -666, -666);
 
     public static List<Vector3Int> FindLocationsWithinAttackDistance(IBoard board, Vector3Int start, ITarget target, int pReach, int sReach, bool diagonalAllowed)
@@ -18,22 +19,22 @@ public static class Navigator
         for (int i = 1; i <= pReach; i++)
         {
             tempLoc = tLoc + new Vector3Int(i, 0, 0);
-            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
+            if (board.IsWalkable(tempLoc) && IsReachable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(-i, 0, 0);
-            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
+            if (board.IsWalkable(tempLoc) && IsReachable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(0, i, 0);
-            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
+            if (board.IsWalkable(tempLoc) && IsReachable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(0, -i, 0);
-            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
+            if (board.IsWalkable(tempLoc) && IsReachable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
@@ -42,22 +43,22 @@ public static class Navigator
         for (int i = 1; i <= sReach; i++)
         {
             tempLoc = tLoc + new Vector3Int(i, i, 0);
-            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
+            if (board.IsWalkable(tempLoc) && IsReachable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(-i, i, 0);
-            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
+            if (board.IsWalkable(tempLoc) && IsReachable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(i, -i, 0);
-            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
+            if (board.IsWalkable(tempLoc) && IsReachable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
             tempLoc = tLoc + new Vector3Int(-i, -i, 0);
-            if (board.IsFree(tempLoc) && IsWalkable(board, start, tempLoc, diagonalAllowed))
+            if (board.IsWalkable(tempLoc) && IsReachable(board, start, tempLoc, diagonalAllowed))
             {
                 locationList.Add(tempLoc);
             }
@@ -149,7 +150,7 @@ public static class Navigator
             List<Vector3Int> neighbors = FindNeighbors(current, board, diagonalAllowed);
             foreach (Vector3Int n in neighbors)
             {
-                float tentativeScore = acs[current] + Distance(current, n);
+                float tentativeScore = acs[current] + Distance(current, n) + (board.OccupiedByUnit(n) ? occupationWeight : 0);
                 if (!acs.ContainsKey(n) || tentativeScore < acs[n])
                 {
                     cameFrom[n] = current;
@@ -183,7 +184,7 @@ public static class Navigator
                 if (!diag && x != 0 && y != 0)
                     continue;
                 Vector3Int temp = c + new Vector3Int(x, y, 0);
-                if (board.IsFree(temp))
+                if (board.IsWalkable(temp))
                 {
                     neighbors.Add(temp);
                 }
@@ -193,7 +194,7 @@ public static class Navigator
         return neighbors;
     }
 
-    public static bool IsWalkable(IBoard board, Vector3Int start, Vector3Int goal, bool diagonalAllowed)
+    public static bool IsReachable(IBoard board, Vector3Int start, Vector3Int goal, bool diagonalAllowed)
     {
         List<Vector3Int> path = FindPath(board, start, goal, diagonalAllowed);
         if (path.Count == 1 && path[0] == ControlVector)

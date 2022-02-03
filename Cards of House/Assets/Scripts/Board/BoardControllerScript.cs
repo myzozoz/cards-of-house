@@ -117,17 +117,19 @@ public class BoardControllerScript : MonoBehaviour, IBoard
 
     public void Simulate(Command command)
     {
+        ResetPathTiles();
         if (GameData.Instance.CurrentStage != Stage.Simulate)
         {
             Debug.Log("Not simulation time yet");
             return;
         }
 
-        SubmitCommand(0, command);
         if (roundsSimulated % spawnEnemiesAfterRounds == 0)
         {
             SpawnEnemies();
         }
+
+        SubmitCommand(0, command);
         SubmitTarget(1, ai.GetTarget());
         SubmitCommand(1, ai.GetCommand());
         roundsSimulated++;
@@ -299,7 +301,7 @@ public class BoardControllerScript : MonoBehaviour, IBoard
             return false;
         }
 
-        if (tilemap.GetTile(loc).name == "Forbidden")
+        if (tilemap.GetTile(loc).name == "Forbidden" || tilemap.GetTile(loc).name == "SpawnPlayerAvatar" || tilemap.GetTile(loc).name == "SpawnEnemyAvatar")
         {
             return false;
         }
@@ -310,6 +312,34 @@ public class BoardControllerScript : MonoBehaviour, IBoard
         }
 
         return true;
+    }
+
+    public bool IsWalkable(Vector3Int loc)
+    {
+        if (!tilemap.HasTile(loc))
+        {
+            return false;
+        }
+
+        if (tilemap.GetTile(loc).name == "Forbidden" || tilemap.GetTile(loc).name == "EnemyAvatarSpawn" || tilemap.GetTile(loc).name == "PlayerAvatarSpawn")
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public bool OccupiedByUnit(Vector3Int loc)
+    {
+        foreach (IUnit u in units.Values)
+        {
+            if (u.GetLocation() == loc)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void ResetPathTiles()

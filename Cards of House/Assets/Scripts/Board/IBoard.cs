@@ -16,6 +16,8 @@ public interface IBoard: IStage
     public Grid GetGrid();
     public Tilemap GetTilemap();
     public bool IsFree(Vector3Int loc);
+    public bool IsWalkable(Vector3Int loc);
+    public bool OccupiedByUnit(Vector3Int loc);
     public void ResetPathTiles();
     public void Deregister(System.Guid unitId);
     public void SpawnUnit(GameObject unit, Vector3Int spawnLocation);

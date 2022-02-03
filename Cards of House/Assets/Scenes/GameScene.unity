@@ -3945,7 +3945,7 @@ MonoBehaviour:
   defaultTile: {fileID: 11400000, guid: 3fd86911b3e0fca44a36697bc471808d, type: 2}
   forbiddenTile: {fileID: 11400000, guid: a5b9e95489501f74f8d0607460f0e8a6, type: 2}
   roundsPerStage: 8
-  spawnEnemiesAfterRounds: 2
+  spawnEnemiesAfterRounds: 10
   enemySpawnCount: 2
   spawnTransform: {fileID: 118758996}
   enemyUnit: {fileID: 5250075762753322480, guid: c0b686470d0e54447b51bc15945a00bc, type: 3}
